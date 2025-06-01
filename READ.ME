@@ -1,0 +1,146 @@
+my-web-app/
+├── node_modules/
+├── src/
+│   ├── api/             # API specific logic (often contains routes)
+│   │   └── routes/      # Route definitions (e.g., user routes, product routes)
+│   │       ├── index.js     # Combines all routes
+│   │       └── user.routes.js
+│   ├── config/          # Configuration files (database, external services, etc.)
+│   │   └── index.js
+│   ├── controllers/     # Request handlers (logic triggered by routes)
+│   │   └── user.controller.js
+│   ├── middleware/      # Custom middleware functions (auth, logging, validation)
+│   │   ├── auth.middleware.js
+│   │   └── error.middleware.js
+│   ├── entities/          # Database schemas
+│   │   └── entry.entity.js
+        └── entryusertoken.entity.js
+        └── error_log.entity.js
+        └── giftcard.entity.js
+        └── giveaway.entity.js
+        └── view_giftcardgiveaway.entity.js
+│   ├── services/        # Business logic, interacts with models/data layer
+│   │   └── user.service.js
+│   ├── utils/           # General utility functions
+│   │   └── logger.js
+│   ├── app.js           # Express app setup, middleware registration
+│   └── server.js        # Server initialization (creates HTTP server, listens on port)
+├── test/                # Automated tests (unit, integration)
+│   └── services/
+│       └── user.service.test.js
+├── public/              # Static assets (images, CSS, client-side JS) - if serving directly
+├── .env
+├── .env.example
+├── .gitignore
+├── README.md            # Project documentation
+├── package.json
+└── package-lock.json
+
+
+
+
+
+In a /repositories or /data-access directory (Recommended for better separation):
+
+Scenario: You want a clear separation between your data structure definition (models) and the logic that interacts with the database. This is often considered a best practice, especially as complexity grows, and aligns well with patterns like the Repository Pattern.
+Structure:
+src/
+├── models/
+│   └── user.model.js       # Schema/Entity definition
+├── repositories/           # Data access layer
+│   └── user.repository.js  # CRUD operations for Users
+├── services/
+│   └── user.service.js     # Business logic, uses UserRepository
+└── ...
+Fit: The user.repository.js file would contain functions like createUser(data), findUserById(id), updateUser(id, updates), deleteUser(id). These functions would handle the actual database interaction (e.g., using the ORM model methods like User.create(data) or writing raw SQL queries). Your /services layer would then call methods from this repository (e.g., UserRepository.findUserById(id)), keeping the service focused on business logic rather than direct DB interaction details.
+
+
+
+
+
+
+
+
+
+// services/giveaway.service.ts
+import { EntityRepository } from '@mikro-orm/core';
+import { Giveaway } from '../entities';
+import { FilterQuery } from '@mikro-orm/core'; // Use FilterQuery for type safety
+
+export class GiveawayService {
+    // Declare a dependency on the Giveaway repository
+    private readonly giveawayRepository: EntityRepository<Giveaway>;
+
+    // Constructor receives the repository instance
+    constructor(giveawayRepo: EntityRepository<Giveaway>) {
+        this.giveawayRepository = giveawayRepo;
+        console.log("GiveawayService initialized with repository.");
+    }
+
+    async getActiveGiveaways(): Promise<Giveaway[]> {
+        console.log("GiveawayService: Fetching active giveaways...");
+        // Use the injected repository.
+        // MikroORM's RequestContext ensures this repository instance uses
+        // the correct request-scoped EntityManager automatically here.
+        const now = new Date();
+        const query: FilterQuery<Giveaway> = {
+            isActive: true,
+            endDate: { $gte: now }
+        };
+        const giveaways = await this.giveawayRepository.find(query);
+        console.log(`GiveawayService: Found ${giveaways.length} active giveaways.`);
+        return giveaways;
+    }
+
+    // Example of another method using the same repository
+    async findById(id: number): Promise<Giveaway | null> {
+         return this.giveawayRepository.findOne({ id });
+    }
+}
+
+
+
+
+
+import express, { Router, Request, Response, NextFunction } from 'express';
+import { GiveawayService } from '../services/giveaway.service'; // Import the service type
+
+// Export a FUNCTION that creates and returns the router
+export function createGiveawayRouter(giveawayService: GiveawayService): Router {
+    const router = express.Router();
+
+    // --- Define routes INSIDE the factory function ---
+
+    router.get('/', async (req: Request, res: Response, next: NextFunction) => {
+        try {
+            console.log("Route GET /giveaways: Using injected giveawayService");
+            // Use the injected giveawayService instance directly
+            const activeGiveaways = await giveawayService.getActiveGiveaways();
+            res.render('index', { giveaways: activeGiveaways }); // Or res.json(...)
+        } catch (error) {
+            console.error("Error in route GET /giveaways:", error);
+            next(error);
+        }
+    });
+
+    router.get('/:id', async (req: Request, res: Response, next: NextFunction) => {
+         try {
+             const giveaway = await giveawayService.findById(Number(req.params.id));
+             if (!giveaway) {
+                 return res.status(404).send('Giveaway not found');
+             }
+             res.json(giveaway);
+         } catch (error) {
+             next(error);
+         }
+     });
+
+    // ... other routes for giveaways ...
+
+    console.log("Giveaway router created.");
+    return router; // Return the fully configured router
+}
+
+
+
+

@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title><%= message.subject %></title>
+    <%- include('partials/head.ejs') %>
+</head>
+<body>
+    <div class="main">
+        <%- include('partials/navigation.ejs') %>
+        <div class="main-singlegiveaway">
+            <section class="main-singlegiveaway-emailconfirmation">
+                <div>
+                    <%- message.body %>
+                </div>
+            </section> 
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Giftcard Giveaway</title>
+    <%- include('partials/head.ejs') %></head>
+<body>
+    <div class="main">
+        <%- include('partials/navigation.ejs') %>
+
+        <div class="main-giveaways">
+            <section class="main-giveaways-component">
+                <% if (giftcardGiveaway_vRows.length != 0) { %>
+                    <% for (var i = 0; i < giftcardGiveaway_vRows.length; i++) { %>
+                        <a href="<%=giftcardGiveaway_vRows[i].giftcardgiveaway_v_URLTITLE %>">
+                            <div>
+                                <img src="/images/<%=giftcardGiveaway_vRows[i].giftcardgiveaway_v_IMAGE %>">
+                                <div>
+                                    <div>
+                                        <%= giftcardGiveaway_vRows[i].giftcardgiveaway_v_TITLE %>
+                                    </div>
+                                    <div>
+                                        <% if (giftcardGiveaway_vRows[i].user_name) { %>
+                                            Winner: <%=giftcardGiveaway_vRows[i].user_name%>
+                                        <% } else { %>
+                                            Began: <%= giftcardGiveaway_vRows[i].giftcardgiveaway_v_giveawaybegindate.toLocaleString('en-us',{month:'short', year:'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric'}) %><br />
+                                            End: <%= giftcardGiveaway_vRows[i].giftcardgiveaway_v_giveawayenddate.toLocaleString('en-us',{month:'short', year:'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric'}) %>
+                                            <br />Time left: <span id="timer<%=i%>"><%= giftcardGiveaway_vRows[i].giftcardgiveaway_v_giveawayenddate%></span>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>                        
+                        </a>
+                    <% } %>   
+                <% } else { %>
+                    <% if (status == "closed") { %>
+                        <div class="no-giveaways">
+                            There are no closed giveaways. Check back later!
+                        </div>
+                    <% } %>
+                    <% if (status == "open") { %>
+                        <div class="no-giveaways">
+                            There are no opened giveaways. Check back later!
+                        </div>
+                    <% } %>                    
+                <% } %>
+            </section>            
+        </div>  
+    </div>
+</body>
+</html>
