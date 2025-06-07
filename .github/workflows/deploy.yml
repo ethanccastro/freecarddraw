@@ -5,19 +5,31 @@ on:
     branches:
       - main
       - develop
+  workflow_dispatch: # Allows you to run this workflow manually from the Actions tab
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     
     steps:
+    - name: Determine branch to checkout
+      id: get_branch
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+        else
+          echo "branch=${{ github.ref_name }}" >> $GITHUB_OUTPUT
+        fi
+
     - uses: actions/checkout@v3
+      with:
+        ref: ${{ steps.get_branch.outputs.branch }} # Checkout the correct branch
     
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
         aws-region: us-west-1
     
     - name: Create SSH key file
@@ -29,7 +41,8 @@ jobs:
     
     - name: Set environment variables
       run: |
-        if [[ $GITHUB_REF == "refs/heads/main" ]]; then
+        # Use the branch determined in the first step
+        if [[ "${{ steps.get_branch.outputs.branch }}" == "main" ]]; then
           echo "Setting up production environment"
           # Create .env file with production variables
           cat << EOF > .env
@@ -47,7 +60,7 @@ jobs:
           NODEMAILER_AUTH_PASS=${{ secrets.PROD_NODEMAILER_AUTH_PASS }}
           EOF
         else
-          echo "Setting up development environment"
+          echo "Setting up development environment for branch ${{ steps.get_branch.outputs.branch }}"
           # Create .env file with development variables
           cat << EOF > .env
           PORT=${{ secrets.DEV_PORT }}
@@ -78,9 +91,9 @@ jobs:
         # Execute deployment commands on EC2
         ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.EC2_HOST }} '
           cd /home/ubuntu/app
-          npm install  # <-- Installs dependencies
+          npm install
           sudo systemctl daemon-reload
           sudo systemctl enable giftcard-giveaway.service
-          sudo systemctl restart giftcard-giveaway.service # <-- Changed to restart
+          sudo systemctl restart giftcard-giveaway.service
           sudo systemctl restart caddy.service
         '
