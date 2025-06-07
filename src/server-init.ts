@@ -20,7 +20,6 @@ import IndexRouteService from "./services/routes/index.routeService.js";
 import GiveawayRouteService from "./services/routes/giveaway.routeService.js";
 import ProfanityApiService from "./services/api/profanity.apiService.js";
 
-import { Worker } from "worker_threads";
 
 export interface Services {
     orm: MikroORM;
@@ -73,20 +72,7 @@ export async function initMiddleware(app: express.Application): Promise<void> {
         app.use('/:giftcardgiveaway_v_ID/:giftcardgiveaway_v_TITLE', registerGiveawayRoute(giveawayRouteService));
         
         // controller - api
-        app.use('/profanity', registerProfanityApi(profanityApiService));  
-        
-        
-        // app.use('/admin', routesAdmin);    
-        // app.use('/servererror', routesServerError);    
-        
-        // app.use(ErrorHandler.systemError);
-        
-
-        // const serviceTrigger = new Worker('./src/services/workerthread.js'); // Removed for test stability
-        // serviceTrigger.postMessage('Starting service trigger...');
-        // serviceTrigger.on('message', (message) => {
-        //     console.log('Message from worker: ', message);
-        // });
+        app.use('/profanity', registerProfanityApi(profanityApiService));         
 
     }
 
