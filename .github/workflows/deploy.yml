@@ -39,13 +39,11 @@ jobs:
         chmod 600 ~/.ssh/deploy_key
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
     
-    - name: Set environment variables
-      run: |
-        # Use the branch determined in the first step
-        if [[ "${{ steps.get_branch.outputs.branch }}" == "main" ]]; then
-          echo "Setting up production environment"
-          # Create .env file with production variables
-          cat << EOF > .env
+        - name: Set environment variables
+        run: |
+          if [[ "${{ steps.get_branch.outputs.branch }}" == "main" ]]; then
+            echo "Setting up production environment"
+            cat << EOF > .env
           PORT=${{ secrets.PROD_PORT }}
           URL=${{ secrets.PROD_URL }}
           URI=${{ secrets.PROD_URI }}
@@ -59,10 +57,9 @@ jobs:
           NODEMAILER_AUTH_USER=${{ secrets.PROD_NODEMAILER_AUTH_USER }}
           NODEMAILER_AUTH_PASS=${{ secrets.PROD_NODEMAILER_AUTH_PASS }}
           EOF
-        else
-          echo "Setting up development environment for branch ${{ steps.get_branch.outputs.branch }}"
-          # Create .env file with development variables
-          cat << EOF > .env
+          else
+            echo "Setting up development environment for branch ${{ steps.get_branch.outputs.branch }}"
+            cat << EOF > .env
           PORT=${{ secrets.DEV_PORT }}
           URL=${{ secrets.DEV_URL }}
           URI=${{ secrets.DEV_URI }}
@@ -76,7 +73,7 @@ jobs:
           NODEMAILER_AUTH_USER=${{ secrets.DEV_NODEMAILER_AUTH_USER }}
           NODEMAILER_AUTH_PASS=${{ secrets.DEV_NODEMAILER_AUTH_PASS }}
           EOF
-        fi
+          fi
     
     - name: Deploy to EC2
       run: |
