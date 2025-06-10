@@ -37,7 +37,11 @@ jobs:
         mkdir -p ~/.ssh
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
+        eval "$(ssh-agent -s)"
+        ssh-add ~/.ssh/deploy_key
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+        # Test SSH connection
+        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'echo "SSH connection successful"'
 
     - name: Set environment variables
       run: |
@@ -78,19 +82,28 @@ jobs:
     - name: Deploy to EC2
       run: |
         # Copy files to EC2
+        echo "Starting file transfer..."
         rsync -avz --delete \
-          -e "ssh -i ~/.ssh/deploy_key" \
+          -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
           --exclude '.git' \
           --exclude '.github' \
           --exclude 'node_modules' \
-          ./ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/
+          ./ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/ || exit 1
 
+        echo "Files transferred successfully. Starting deployment..."
+        
         # Execute deployment commands on EC2
-        ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.EC2_HOST }} '
+        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} '
+          set -e
           cd /home/ubuntu/app
+          echo "Installing dependencies..."
           npm install
+          echo "Reloading systemd..."
           sudo systemctl daemon-reload
+          echo "Enabling service..."
           sudo systemctl enable giftcard-giveaway.service
+          echo "Restarting services..."
           sudo systemctl restart giftcard-giveaway.service
           sudo systemctl restart caddy.service
-        '
+          echo "Deployment completed successfully!"
+        ' || exit 1
