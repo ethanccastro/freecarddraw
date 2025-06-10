@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: View environmental variables
+      run: env
     - name: Determine branch to checkout
       id: get_branch
       run: |
