@@ -12,11 +12,6 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: View environmental variables
-      run: 
-        echo "${{ secrets.SSH_PRIVATE_KEY }}"
-        echo "${{ secrets.EC2_HOST }}"
-
     - name: Determine branch to checkout
       id: get_branch
       run: |
