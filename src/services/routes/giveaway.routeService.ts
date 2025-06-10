@@ -176,8 +176,7 @@ private readonly entryUserTokenRepository: EntityRepository<EntryUserToken>;
             while (!rawResult || rawResult.length == 0) {
                 rawResult = await this.em.execute(sql, params, "all");
             }
-            entryNumber = rawResult[0].entry_giveawaynumber;
-    
+            entryNumber = rawResult[0][0].entry_giveawaynumber;
     
             entryRow.entry_giveawaynumber = entryNumber;
             this.em.remove(entryUserTokenRow);

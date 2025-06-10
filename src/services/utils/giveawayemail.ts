@@ -1,5 +1,4 @@
 import nodemailer from 'nodemailer';
-import { config } from '../../../config.js';
 import Global from './global.js';
 
 interface EmailOptions {
@@ -16,8 +15,8 @@ export default class GiveawayEmail {
     private static transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-            user: config.nodeMailerAuthUser,
-            pass: config.nodeMailerAuthPass?.replaceAll('\\s', ' ') || ''
+            user: process.env.NODEMAILER_AUTH_USER,
+            pass: process.env.NODEMAILER_AUTH_PASS
         }
     });
 
@@ -278,15 +277,16 @@ export default class GiveawayEmail {
 
     static async sendEmailConfirmation(emailOptions: EmailOptions): Promise<void> {
         try {
-            console.log(config.nodeMailerAuthPass);
+            console.log('email: ', process.env.NODEMAILER_AUTH_PASS);
             await this.transporter.sendMail({
-                from: config.nodeMailerAuthUser,
+                from: process.env.NODEMAILER_AUTH_USER,
                 to: emailOptions.entryemail,
                 subject: `Action Required: Confirm Your Email For giveaway ID: [${emailOptions.giveawayid}]`,
-                html: this.htmlEmailConfirmation.replace('[Verification Link]', `http://${config.url}/${emailOptions.giveawayid}/${emailOptions.giveawaytitle}/confirm/verifygiveaway?id=${emailOptions.verificationToken}`),
+                html: this.htmlEmailConfirmation.replace('[Verification Link]', `http://${process.env.URL}/${emailOptions.giveawayid}/${emailOptions.giveawaytitle}/confirm/verifygiveaway?id=${emailOptions.verificationToken}`),
             });
         } catch (error: unknown) {
             if (error instanceof Error) {
+                console.log(error);
                 // await Error_Log.insertErrorLog(
                 //     Global.getMetaData(),
                 //     error.stack || error.message
@@ -298,7 +298,7 @@ export default class GiveawayEmail {
     static async sendEmailentryNumber(emailOptions: EmailOptions): Promise<void> {
         try {
             await this.transporter.sendMail({
-                from: config.nodeMailerAuthUser,
+                from: process.env.NODEMAILER_AUTH_USER,
                 to: emailOptions.entryemail,
                 subject: `Here is Your entry Number Copy For Giveaway ID: [${emailOptions.giveawayid}]`,
                 html: this.htmlEmailentryNumber.replace('[entryNumber]', `${emailOptions.entryNumber}`),
@@ -316,10 +316,10 @@ export default class GiveawayEmail {
     static async sendEmailEntryNumberWinner(emailOptions: EmailOptions): Promise<void> {
         try {
             await this.transporter.sendMail({
-                from: config.nodeMailerAuthUser,
+                from: process.env.NODEMAILER_AUTH_USER,
                 to: emailOptions.entryemail,
-                subject: `Congratulations, Winner For Giveaway ID: [${emailOptions.giveawayid}]!`,
-                html: this.htmlEmailEntryNumberWinner.replace('[Giveaway]', `${emailOptions.giftcard}`),
+                subject: `Congratulations! You've Won! For Giveaway ID: [${emailOptions.giveawayid}]`,
+                html: this.htmlEmailEntryNumberWinner.replace('[entryNumber]', `${emailOptions.entryNumber}`),
             });
         } catch (error: unknown) {
             if (error instanceof Error) {

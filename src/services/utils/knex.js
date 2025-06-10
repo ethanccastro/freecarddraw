@@ -1,16 +1,13 @@
-const config = require('../../config/config');
-
-
-const knex = require('knex')( {
+const knex = require('knex')({
     client: 'mysql2',
     version: '8.0',
     connection: {
-        host: config.mySqlHost,
-        port: config.mySqlPort,
-        user: config.mySqlUser,
-        password: config.mySqlPassword,
-        database: config.mySqlDatabase,
-        namedPlaceholders: true,        
+        host: process.env.MYSQL_HOST,
+        port: process.env.MYSQL_PORT,
+        user: process.env.MYSQL_USER,
+        password: process.env.MYSQL_PASSWORD,
+        database: process.env.MYSQL_DATABASE,
+        namedPlaceholders: true,
     }
 });
 
