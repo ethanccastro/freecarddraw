@@ -177,22 +177,3 @@ jobs:
         echo "Cleaning up SSH keys..."
         rm -f ~/.ssh/deploy_key
         ssh-add -d ~/.ssh/deploy_key || true
-
-    - name: Rollback on Failure
-      if: failure()
-      run: |
-        set -e
-        echo "Deployment failed, attempting rollback..."
-        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} '
-          if [ -f "/home/ubuntu/app_backup_*.tar.gz" ]; then
-            echo "Restoring from latest backup..."
-            sudo systemctl stop giftcard-giveaway.service
-            rm -rf /home/ubuntu/app
-            tar -xzf $(ls -t /home/ubuntu/app_backup_*.tar.gz | head -1) -C /home/ubuntu/
-            sudo systemctl start giftcard-giveaway.service
-            echo "Rollback completed successfully"
-          else
-            echo "No backup found for rollback"
-            exit 1
-          fi
-        '
