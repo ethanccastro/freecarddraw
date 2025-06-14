@@ -34,22 +34,26 @@ jobs:
 
     - name: Create SSH key file
       run: |
+        set -x  # Enable command echoing
         mkdir -p ~/.ssh
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
         eval "$(ssh-agent -s)"
         ssh-add ~/.ssh/deploy_key
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-        # Test SSH connection with verbose output and capture error
-        ssh -v -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'echo "SSH connection successful"' 2> ssh_error.log || {
-          echo "SSH connection failed. Error details:"
-          cat ssh_error.log
-          echo "Key file format check:"
+        
+        # Test SSH connection with verbose output
+        echo "Attempting SSH connection..."
+        ssh -v -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'echo "SSH connection successful"' 2>&1 || {
+          echo "=== SSH CONNECTION FAILED ==="
+          echo "=== KEY FILE FORMAT ==="
           head -n 1 ~/.ssh/deploy_key
-          echo "Key file permissions:"
+          echo "=== KEY FILE PERMISSIONS ==="
           ls -l ~/.ssh/deploy_key
-          echo "SSH agent status:"
+          echo "=== SSH AGENT STATUS ==="
           ssh-add -l
+          echo "=== SSH CONNECTION ATTEMPT ==="
+          ssh -v -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'echo "SSH connection successful"' 2>&1
           exit 1
         }
 
