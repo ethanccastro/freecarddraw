@@ -10,6 +10,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    timeout-minutes: 15  # Prevent infinite runs
 
     steps:
     - name: Determine branch to checkout
@@ -25,6 +26,20 @@ jobs:
       with:
         ref: ${{ steps.get_branch.outputs.branch }} # Checkout the correct branch
 
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Cache node_modules
+      uses: actions/cache@v3
+      with:
+        path: ~/.npm
+        key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-node-
+
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
       with:
@@ -32,51 +47,37 @@ jobs:
         aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
         aws-region: us-west-1
 
+    - name: Verify Environment Variables
+      run: |
+        set -e
+        echo "Verifying required environment variables..."
+        if [ -z "${{ secrets.EC2_HOST }}" ]; then
+          echo "Error: EC2_HOST is not set"
+          exit 1
+        fi
+        if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+          echo "Error: SSH_PRIVATE_KEY is not set"
+          exit 1
+        fi
+        if [ -z "${{ secrets.AWS_ACCESS_KEY_ID }}" ] || [ -z "${{ secrets.AWS_SECRET_KEY }}" ]; then
+          echo "Error: AWS credentials are not set"
+          exit 1
+        fi
+        echo "All required environment variables are set"
+
     - name: Create SSH key file
       run: |
-        set -x  # Enable command echoing
+        set -e
+        echo "Setting up SSH key..."
         mkdir -p ~/.ssh
         echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
         chmod 600 ~/.ssh/deploy_key
         eval "$(ssh-agent -s)"
         ssh-add ~/.ssh/deploy_key
-        
-        # Debug information
-        echo "=== DEBUG INFORMATION ==="
-        echo "EC2 Host: ${{ secrets.EC2_HOST }}"
-        echo "Testing host connectivity..."
-        ping -c 1 ${{ secrets.EC2_HOST }} || echo "Ping failed - this is normal if ICMP is blocked"
-        
-        echo "=== SSH-KEYSCAN ATTEMPT ==="
-        # First, try to get the host key without saving it
-        ssh-keyscan -H -v ${{ secrets.EC2_HOST }} 2>&1 || {
-          echo "Initial ssh-keyscan failed. This might be due to:"
-          echo "1. EC2 instance not running"
-          echo "2. Security group not allowing SSH (port 22)"
-          echo "3. EC2 host address is incorrect"
-          echo "4. Network connectivity issues"
-          exit 1
-        }
-        
-        # If successful, add to known_hosts
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-        
-        echo "=== SSH CONNECTION ATTEMPT ==="
-        ssh -v -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'echo "SSH connection successful"' 2>&1 || {
-          echo "=== SSH CONNECTION FAILED ==="
-          echo "=== KEY FILE FORMAT ==="
-          head -n 1 ~/.ssh/deploy_key
-          echo "=== KEY FILE PERMISSIONS ==="
-          ls -l ~/.ssh/deploy_key
-          echo "=== SSH AGENT STATUS ==="
-          ssh-add -l
-          echo "=== SSH CONNECTION ATTEMPT ==="
-          ssh -v -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'echo "SSH connection successful"' 2>&1
-          exit 1
-        }
 
     - name: Set environment variables
       run: |
+        set -e
         if [[ "${{ steps.get_branch.outputs.branch }}" == "main" ]]; then
           echo "Setting up production environment"
           cat << EOF > .env
@@ -111,8 +112,24 @@ jobs:
         EOF
         fi
 
+    - name: Backup Current Version
+      run: |
+        set -e
+        echo "Creating backup of current version..."
+        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} '
+          if [ -d "/home/ubuntu/app" ]; then
+            tar -czf /home/ubuntu/app_backup_$(date +%Y%m%d_%H%M%S).tar.gz /home/ubuntu/app
+            echo "Backup created successfully"
+          else
+            echo "No existing app directory to backup"
+          fi
+        '
+
     - name: Deploy to EC2
       run: |
+        set -e
+        echo "Starting deployment to ${{ steps.get_branch.outputs.branch }} environment..."
+        
         # Copy files to EC2
         echo "Starting file transfer..."
         rsync -avz --delete \
@@ -139,3 +156,54 @@ jobs:
           sudo systemctl restart caddy.service
           echo "Deployment completed successfully!"
         ' || exit 1
+
+    - name: Verify Deployment
+      run: |
+        set -e
+        echo "Verifying deployment..."
+        # Wait for services to start
+        sleep 10
+        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} '
+          # Check if the service is running
+          if ! systemctl is-active --quiet giftcard-giveaway.service; then
+            echo "Error: giftcard-giveaway.service is not running"
+            exit 1
+          fi
+          # Check if Caddy is running
+          if ! systemctl is-active --quiet caddy.service; then
+            echo "Error: caddy.service is not running"
+            exit 1
+          fi
+          # Try to curl the health endpoint
+          if ! curl -f http://localhost:${{ secrets.PORT }}/health; then
+            echo "Error: Health check failed"
+            exit 1
+          fi
+          echo "Deployment verification successful"
+        '
+
+    - name: Cleanup SSH keys
+      if: always()
+      run: |
+        echo "Cleaning up SSH keys..."
+        rm -f ~/.ssh/deploy_key
+        ssh-add -d ~/.ssh/deploy_key || true
+
+    - name: Rollback on Failure
+      if: failure()
+      run: |
+        set -e
+        echo "Deployment failed, attempting rollback..."
+        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} '
+          if [ -f "/home/ubuntu/app_backup_*.tar.gz" ]; then
+            echo "Restoring from latest backup..."
+            sudo systemctl stop giftcard-giveaway.service
+            rm -rf /home/ubuntu/app
+            tar -xzf $(ls -t /home/ubuntu/app_backup_*.tar.gz | head -1) -C /home/ubuntu/
+            sudo systemctl start giftcard-giveaway.service
+            echo "Rollback completed successfully"
+          else
+            echo "No backup found for rollback"
+            exit 1
+          fi
+        '
