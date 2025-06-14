@@ -40,10 +40,24 @@ jobs:
         chmod 600 ~/.ssh/deploy_key
         eval "$(ssh-agent -s)"
         ssh-add ~/.ssh/deploy_key
-        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
         
-        # Test SSH connection with verbose output
-        echo "Attempting SSH connection..."
+        # Debug information
+        echo "=== DEBUG INFORMATION ==="
+        echo "EC2 Host: ${{ secrets.EC2_HOST }}"
+        echo "Testing host connectivity..."
+        ping -c 1 ${{ secrets.EC2_HOST }} || echo "Ping failed - this is normal if ICMP is blocked"
+        
+        echo "=== SSH-KEYSCAN ATTEMPT ==="
+        ssh-keyscan -H -v ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>&1 || {
+          echo "ssh-keyscan failed. This might be due to:"
+          echo "1. EC2 instance not running"
+          echo "2. Security group not allowing SSH (port 22)"
+          echo "3. EC2 host address is incorrect"
+          echo "4. Network connectivity issues"
+          exit 1
+        }
+        
+        echo "=== SSH CONNECTION ATTEMPT ==="
         ssh -v -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'echo "SSH connection successful"' 2>&1 || {
           echo "=== SSH CONNECTION FAILED ==="
           echo "=== KEY FILE FORMAT ==="
