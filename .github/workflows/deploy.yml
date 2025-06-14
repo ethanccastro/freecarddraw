@@ -48,14 +48,18 @@ jobs:
         ping -c 1 ${{ secrets.EC2_HOST }} || echo "Ping failed - this is normal if ICMP is blocked"
         
         echo "=== SSH-KEYSCAN ATTEMPT ==="
-        ssh-keyscan -H -v ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts 2>&1 || {
-          echo "ssh-keyscan failed. This might be due to:"
+        # First, try to get the host key without saving it
+        ssh-keyscan -H -v ${{ secrets.EC2_HOST }} 2>&1 || {
+          echo "Initial ssh-keyscan failed. This might be due to:"
           echo "1. EC2 instance not running"
           echo "2. Security group not allowing SSH (port 22)"
           echo "3. EC2 host address is incorrect"
           echo "4. Network connectivity issues"
           exit 1
         }
+        
+        # If successful, add to known_hosts
+        ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
         
         echo "=== SSH CONNECTION ATTEMPT ==="
         ssh -v -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'echo "SSH connection successful"' 2>&1 || {
