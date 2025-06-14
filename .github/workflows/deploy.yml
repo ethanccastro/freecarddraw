@@ -40,18 +40,18 @@ jobs:
         eval "$(ssh-agent -s)"
         ssh-add ~/.ssh/deploy_key
         ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-        # Test SSH connection with verbose output
-        ssh -v -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'echo "SSH connection successful"'
-        # If the above fails, show the contents of the key file (without the actual key)
-        if [ $? -ne 0 ]; then
-          echo "SSH connection failed. Checking key file format..."
+        # Test SSH connection with verbose output and capture error
+        ssh -v -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} 'echo "SSH connection successful"' 2> ssh_error.log || {
+          echo "SSH connection failed. Error details:"
+          cat ssh_error.log
+          echo "Key file format check:"
           head -n 1 ~/.ssh/deploy_key
           echo "Key file permissions:"
           ls -l ~/.ssh/deploy_key
           echo "SSH agent status:"
           ssh-add -l
           exit 1
-        fi
+        }
 
     - name: Set environment variables
       run: |
