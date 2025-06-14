@@ -1,130 +1,183 @@
 import { getUUID, isEmailValid } from './_global.mjs';
 
-const formUUID = getUUID();
-var responseisUsernameProfanity;
-var responseisEntryEmailUnique;
-var responsePostgiveaway;
-var responseUsers;
-var warning;
-var email;
-var username;
+// No more global variables for responses! This is much safer.
 
-async function isSetWarning() {   
-    let errorMessage = '';
+// ==========================================================
+//  REFACTORED FETCH FUNCTIONS (They now accept arguments)
+// ==========================================================
 
-    if (username.value.length != 0) {
-        responseisUsernameProfanity = await postFetchisUsernameProfanity();
-        responseisUsernameProfanity = await responseisUsernameProfanity.json()
-    }
-
-    if (email.value.length != 0 && username.value.length != 0 && isEmailValid(email.value)) {
-        responseisEntryEmailUnique = await postFetchisEntryEmailUnique();
-    }
-
-    if (email.value.length == 0 || !isEmailValid(email.value)) {
-        errorMessage += 'Please enter a valid email to enter the giveaway';
-        email.style.borderColor = 'red';
-    }
-    if (username.value.length == 0 || responseisUsernameProfanity.message == true) {
-        errorMessage += '</br>Please enter a valid username to enter the giveaway';
-        username.style.borderColor = 'red';
-    }
-
-    if (email.value.length == 0 || (responseisEntryEmailUnique && responseisEntryEmailUnique.status == 409)) {
-        errorMessage += '</br>This email already exists for this giveaway';
-        email.style.borderColor = 'red';
-    }    
-
-    warning.style.color = 'red';
-    warning.style.backgroundColor = '#EDEEF0';
-    warning.innerHTML = errorMessage;
-
-    if (warning.innerHTML.length != 0) {
-        return true;
-    }
-
-    return false;
-}
-
-const postFetchisEntryEmailUnique = async () => {
+const postFetchisEntryEmailUnique = async (emailValue) => {
     try {
-        const responseisEntryEmailUnique = await fetch(`${window.location.href}/isemailentryunique`, {
+        const response = await fetch(`${window.location.href}/isemailentryunique`, {
             method: "POST",
             body: JSON.stringify({
                 isEmailCheck: 'true',
-                email: `${email.value}`,
+                email: emailValue,
             }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
-        })
-
-        return responseisEntryEmailUnique;
-    }   
-    catch(error) {
-        console.log(error);
+            headers: { "Content-type": "application/json; charset=UTF-8" }
+        });
+        return response;
+    } catch(error) {
+        console.error("Error checking email uniqueness:", error);
     }
 };
 
-const postFetchisUsernameProfanity = async () => {
+const postFetchisUsernameProfanity = async (usernameValue) => {
     try {
-        const responseisUsernameProfanity = await fetch(`${window.location.origin}/profanity`, {
+        const response = await fetch(`${window.location.origin}/profanity`, {
+            method: "POST",
+            body: JSON.stringify({ username: usernameValue }),
+            headers: { "Content-type": "application/json; charset=UTF-8" }
+        });
+        return response;
+    } catch(error) {
+        console.error("Error checking username profanity:", error);
+    }
+};
+
+const postFetchpostgiveaway = async (emailValue, usernameValue) => {
+    try {
+        const response = await fetch(`${window.location.href}/entergiveaway`, {
             method: "POST",
             body: JSON.stringify({
-                username: `${username.value}`
+                email: emailValue,
+                username: usernameValue
             }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
-        })
-
-        return responseisUsernameProfanity;
-    }   
-    catch(error) {
-        console.log(error);
+            headers: { "Content-type": "application/json; charset=UTF-8" }
+        });
+        return response;
+    } catch(error) {
+        console.error("Error posting giveaway entry:", error);
     }
 };
 
 
-const postFetchpostgiveaway = async () => {
-    try {
-        const responsePostgiveaway = await fetch(`${window.location.href}/entergiveaway`, {
-            method: "POST",
-            body: JSON.stringify({
-                email: `${email.value}`,
-                username: `${username.value}`
-            }),
-            headers: {
-                "Content-type": "application/json; charset=UTF-8"
-            }
-        })
+// ==========================================================
+//  REFACTORED VALIDATION FUNCTION (Returns a result object)
+// ==========================================================
 
-        return responsePostgiveaway;
-    }   
-    catch(error) {
-        console.log(error);
+async function getValidationResult(emailValue, usernameValue) {
+    const errorMessages = [];
+    let emailCheckResponse = null;
+
+    // --- Make API calls first ---
+    const profanityFetch = postFetchisUsernameProfanity(usernameValue);
+    if (emailValue && isEmailValid(emailValue)) {
+        emailCheckResponse = await postFetchisEntryEmailUnique(emailValue);
     }
-};
+    const profanityResponse = await profanityFetch;
+    const profanityData = await profanityResponse.json();
 
-//main client code
-document.addEventListener('DOMContentLoaded', async () => {
-    if (!document.getElementById('uuid').value) {
-        document.getElementById('uuid').value = formUUID;
+    // --- Build error list based on conditions ---
+    if (!emailValue || !isEmailValid(emailValue)) {
+        errorMessages.push('Please enter a valid email address.');
+    }
+    if (!usernameValue) {
+        errorMessages.push('Please enter a username.');
+    } else if (profanityData.message === true) {
+        errorMessages.push('This username is not permitted. Please choose another.');
+    }
+    if (emailCheckResponse && emailCheckResponse.status === 409) {
+        errorMessages.push('This email has already been used for this giveaway.');
     }
 
+    // Return a useful object with all the information
+    return {
+        hasErrors: errorMessages.length > 0,
+        errors: errorMessages,
+        emailIsUnique: emailCheckResponse ? emailCheckResponse.status === 200 : false,
+        usernameIsClean: profanityData.message === false,
+    };
+}
 
-    document.getElementById('entry').addEventListener('click', async (event) => {
-        event.preventDefault();
-        warning = document.getElementById('warning');
-        email = document.getElementById('email');
-        username = document.getElementById('username');
-        if (!await isSetWarning()) {
-            if (responseisEntryEmailUnique.status == 200) {
-                responsePostgiveaway = await postFetchpostgiveaway();
-                responsePostgiveaway = await responsePostgiveaway.json();
-                window.location.href = `${window.location.href}/${responsePostgiveaway.id}`;
+
+// ==========================================================
+//  MAIN CLIENT CODE (The Entry Point)
+// ==========================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // Set UUID if it doesn't exist
+    const uuidInput = document.getElementById('uuid');
+    if (!uuidInput.value) {
+        uuidInput.value = getUUID();
+    }
+
+    // Initialize countdown timer if element exists
+     const countdownElement = document.getElementById('countdown-timer');
+    if (countdownElement) {
+       // --- IMPROVEMENT: Store the intervalID to clear it later ---
+        let countdownInterval; 
+
+        function updateCountdown() {
+            const endDateStr = countdownElement.dataset.endDate;
+            const endDate = new Date(endDateStr);
+            const now = new Date();
+            const timeLeft = endDate - now;
+
+            if (timeLeft <= 0) {
+                countdownElement.textContent = 'Giveaway has ended';
+                clearInterval(countdownInterval);
+                return;
             }
+
+            const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+            let timeString = '';
+            if (days > 0) timeString += `${days}d `;
+            if (hours > 0 || days > 0) timeString += `${hours}h `;
+            if (minutes > 0 || hours > 0 || days > 0) timeString += `${minutes}m `;
+            timeString += `${seconds}s`;
+
+            countdownElement.textContent = timeString;
         }
+
+        // Update immediately and then every second
+        updateCountdown();
+        // --- IMPROVEMENT: Assign the interval to the variable ---
+        countdownInterval = setInterval(updateCountdown, 1000);
+    }
+
+    // Get references to form elements
+    const form = document.getElementById('form');
+    const emailInput = document.getElementById('email');
+    const usernameInput = document.getElementById('username');
+    const warningBox = document.getElementById('warning');
+
+    // Attach listener to the FORM's submit event, not the button's click
+    form.addEventListener('submit', async (event) => {
+        // Always stop the default submission to allow for async validation
+        event.preventDefault();
+        
+        // --- 1. Reset previous errors ---
+        emailInput.classList.remove('input-error');
+        usernameInput.classList.remove('input-error');
+        warningBox.classList.remove('active');
+        warningBox.innerHTML = '';
+
+        // --- 2. Get the validation result ---
+        const validation = await getValidationResult(emailInput.value, usernameInput.value);
+
+        // --- 3. Handle the result ---
+        if (validation.hasErrors) {
+            // Display errors and highlight fields
+            warningBox.innerHTML = validation.errors.map(msg => `<p>${msg}</p>`).join('');
+            warningBox.classList.add('active');
+
+            if (validation.errors.some(e => e.includes('email'))) {
+                emailInput.classList.add('input-error');
+            }
+            if (validation.errors.some(e => e.includes('username'))) {
+                usernameInput.classList.add('input-error');
+            }
+        } else {
+            // --- NO ERRORS: Proceed to submit the data ---
+            const postResponse = await postFetchpostgiveaway(emailInput.value, usernameInput.value);
+            const postData = await postResponse.json();
             
+            // Redirect the user to the confirmation page
+            window.location.href = `${window.location.href}/${postData.id}`;
+        }
     });    
 });

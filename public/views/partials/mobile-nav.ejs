@@ -1,0 +1,49 @@
+<!-- partials/mobile-nav.ejs -->
+<div id="mobile-menu" class="mobile-nav">
+    <div class="mobile-nav-header">
+        <h3>Menu</h3>
+        <button id="close-menu-btn" class="close-button" aria-label="Close Menu">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    <nav class="mobile-nav-links">
+        <ul>
+            <!-- Main site links -->
+            <li><a href="/"><i class="fas fa-home"></i><span>Home</span></a></li>
+        </ul>
+
+        <!-- ===================================================== -->
+        <!-- == NEW: Categories Section for Mobile Navigation == -->
+        <!-- ===================================================== -->
+        <hr class="mobile-nav-divider">
+        <div class="mobile-nav-section-header">
+            <i class="fas fa-tags"></i>
+            <span>Categories</span>
+        </div>
+        <ul>
+            <li>
+                <a href="/">
+                    <i></i>
+                    <span>All</span>
+                </a>
+            </li>            
+            <% if (typeof categories !== 'undefined' && categories.length > 0) { %>
+                <% categories.forEach(function(category) { %>
+                    <li>
+                        <a href="/category/<%= category.type %>">
+                            <i class="fa-brands fa-<%= category.type %>"></i>
+                            <span><%= category.type %></span>
+                        </a>
+                    </li>
+                <% }); %>
+            <% } else { %>
+                <li><span class="no-categories">No active categories</span></li>
+            <% } %>
+        </ul>
+        <!-- ===================================================== -->   
+
+    </nav>
+</div>
+
+<!-- Overlay for when menu is open -->
+<div id="menu-overlay" class="menu-overlay"></div>

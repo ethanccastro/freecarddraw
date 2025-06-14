@@ -1,0 +1,29 @@
+<!-- partials/sidebar.ejs -->
+<aside class="sidebar">
+    <nav class="sidebar-nav">
+        <div class="sidebar-header">
+            <i class="fas fa-tags"></i>
+            <span>Categories</span>
+        </div>
+        <ul>                    
+            <li>
+                <a href="/">
+                    <i></i>                    
+                    <span>All</span>
+                </a>
+            </li>
+            <% if (typeof categories !== 'undefined' && categories.length > 0) { %>
+                <% categories.forEach(function(category) { %>
+                    <li>
+                        <a href="/category/<%= category.type %>">
+                            <i class="fa-brands fa-<%= category.type %>"></i>
+                            <span><%= category.type %></span>
+                        </a>
+                    </li>
+                <% }); %>
+            <% } else { %>
+                <li><span class="no-categories">No active categories</span></li>
+            <% } %>
+        </ul>
+    </nav>
+</aside>

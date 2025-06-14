@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>   
+    <%- include('partials/head.ejs') %>
+</head>
+<body>
+    <div class="top-header">
+        <%- include('partials/navigation.ejs') %>
+    </div>
+
+    <div class="site-container">
+        <!-- Sidebar Partial -->
+        <%- include('partials/sidebar.ejs') %>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-header">
+                <h1>Error</h1>
+                <nav class="content-sub-nav">
+                    <a href="/" class="back-link"><i class="fas fa-arrow-left"></i> Back to Home</a>
+                </nav>
+            </div>
+
+            <div class="error-container">
+                <i class="fas fa-exclamation-circle"></i>
+                <h2><%= message %></h2>
+                <p>We apologize for the inconvenience. Please try again later or return to the home page.</p>
+            </div>
+        </main>
+    </div>
+    <%- include('partials/mobile-nav.ejs') %>
+    <%- include('partials/scripts.ejs') %>
+</body>
+</html> 

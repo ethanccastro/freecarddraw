@@ -1,428 +1,569 @@
-@font-face {
-    font-family: SI;
-    src: url('https://fonts.googleapis.com/css2?family=Special+Elite&display=swap');
+/* --- Global Styles & FanDuel Color Palette --- */
+:root {
+    --fd-bg-dark: #0D1A2B;         /* Main background */
+    --fd-bg-med: #182C47;          /* Sidebar, Cards, Header */
+    --fd-bg-light: #2A4162;        /* Hover effects */
+    --fd-blue-accent: #1575E0;     /* Primary accent blue */
+    --fd-border: #2A4162;          /* Borders */
+    --text-primary: #FFFFFF;       /* White text */
+    --text-secondary: #9DA9B4;     /* Grey text */
+    --accent-green: #2ECC71;       /* Live timers */
+    --winner-gold: #f1c40f;        /* Winner trophies */
+    --danger-red: #e74c3c;         /* For warnings */
 }
 
-* {
-    font-family: Google Sans,Roboto,Arial,sans-serif;
-    background-color: #EDEEF0;
-    text-decoration: none;
+/* --- Base & Reset --- */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body, html { font-family: 'Poppins', sans-serif; background-color: var(--fd-bg-dark); color: var(--text-primary); line-height: 1.6; }
+a { text-decoration: none; color: inherit; }
+ul { list-style: none; }
+
+/* --- Top Navigation Bar --- */
+.top-header { background-color: var(--fd-bg-med); border-bottom: 1px solid var(--fd-border); padding: 0 1.5rem; }
+.nav-container { max-width: 1600px; margin: 0 auto; height: 65px; display: flex; justify-content: space-between; align-items: center; }
+.nav-logo { display: flex; align-items: center; gap: 0.75rem; font-size: 1.2rem; font-weight: 700; color: var(--text-primary); transition: color 0.2s ease; }
+.nav-logo:hover { color: #e0e0e0; }
+.nav-logo i { font-size: 1.5rem; color: var(--fd-blue-accent); }
+.nav-actions { display: flex; align-items: center; gap: 1rem; }
+.nav-button { padding: 0.5rem 1.25rem; border-radius: 6px; font-weight: 600; font-size: 0.9rem; transition: all 0.2s ease; text-align: center; }
+.nav-button-primary { background-color: var(--fd-blue-accent); color: var(--text-primary); }
+.nav-button-primary:hover { background-color: #3498db; }
+.nav-button-secondary { background-color: transparent; color: var(--text-secondary); border: 1px solid var(--fd-border); }
+.nav-button-secondary:hover { color: var(--text-primary); border-color: var(--text-primary); }
+
+/* --- Main Site Layout --- */
+.site-container { display: grid; grid-template-columns: 260px 1fr; max-width: 1600px; margin: 0 auto; gap: 1.5rem; padding: 1.5rem; }
+
+/* --- Sidebar --- */
+.sidebar { background-color: var(--fd-bg-med); border-radius: 8px; padding: 1rem 0.5rem; height: fit-content; }
+.sidebar-header { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--text-secondary); padding: 0.5rem 1rem 1rem 1rem; display: flex; align-items: center; gap: 0.75rem; }
+.sidebar-nav ul { display: flex; flex-direction: column; }
+.sidebar-nav a { display: flex; align-items: center; padding: 0.75rem 1rem; border-radius: 6px; margin: 0.15rem 0.5rem; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
+.sidebar-nav a:hover { background-color: var(--fd-bg-light); }
+.sidebar-nav a.active { background-color: var(--fd-blue-accent); color: var(--text-primary); }
+.sidebar-nav a i { width: 30px; font-size: 1.1rem; color: var(--text-secondary); text-align: center; transition: color 0.2s ease; }
+.sidebar-nav a:hover i, .sidebar-nav a.active i { color: var(--text-primary); }
+
+/* --- Main Content Area --- */
+.main-content { background-color: var(--fd-bg-med); border-radius: 8px; padding: 1.5rem 2rem; }
+.content-header { padding-bottom: 1rem; border-bottom: 1px solid var(--fd-border); margin-bottom: 1.5rem; }
+.content-header h1 { font-size: 1.8rem; font-weight: 600; margin-bottom: 1rem; }
+.content-sub-nav { display: flex; gap: 1.5rem; }
+.content-sub-nav a { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); padding: 0.5rem 0; border-bottom: 3px solid transparent; transition: color 0.2s ease, border-color 0.2s ease; }
+.content-sub-nav a:hover { color: var(--text-primary); }
+.content-sub-nav a.active { color: var(--text-primary); border-bottom-color: var(--fd-blue-accent); }
+
+/* --- Giveaway Grid & Cards (Index Page) --- */
+.giveaway-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
+.giveaway-card { background-color: var(--fd-bg-dark); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; border: 1px solid var(--fd-border); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.giveaway-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+.card-image img { width: 100%; height: 160px; object-fit: cover; display: block; }
+.card-content { padding: 1.25rem; flex-grow: 1; }
+.card-title { font-size: 1.1rem; font-weight: 600; line-height: 1.4; }
+.card-status { padding: 0.75rem 1.25rem; background-color: var(--fd-bg-light); border-top: 1px solid var(--fd-border); font-size: 0.9rem; }
+.winner-info, .timer-info { display: flex; align-items: center; gap: 0.75rem; }
+.winner-info .fa-trophy { color: var(--winner-gold); } .winner-info strong { color: var(--winner-gold); }
+.timer-info .fa-clock { color: var(--accent-green); } .timer-info strong { font-weight: 600; color: var(--accent-green); }
+.no-giveaways-container { grid-column: 1 / -1; border: 1px dashed var(--fd-border); border-radius: 8px; padding: 3rem 1.5rem; text-align: center; }
+.no-giveaways-container .fa-box-open { font-size: 3rem; margin-bottom: 1rem; color: var(--text-secondary); }
+.no-giveaways-container h2 { font-size: 1.5rem; margin-bottom: 0.5rem; } .no-giveaways-container p { color: var(--text-secondary); }
+
+/*
+=====================================================
+    REVISED: Single Giveaway Detail Page Styles
+=====================================================
+*/
+.giveaway-single-page {
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
-body, html {
-    height: 100vh;
-    width: 100vw;
-    display: flex;
-    flex-direction: column;    
-    margin: 0;
-    overflow-x: hidden;
+/* MODIFIED: Image is now smaller and has less margin */
+.giveaway-hero {
+    margin-bottom: 1.5rem; /* Reduced bottom margin for tighter spacing */
 }
 
-
-@media (max-width: 480px) {
-    body, html {
-      height: 98vh; /* Reduce height slightly */
-      width: 100vw; /* Keep width at 100vw */
-    }
-  }
-  
-  
-@media (max-width: 768px) {
-    body, html {
-        height: 99vh;
-        width: 100vw;
-    }
-}  
-
-
-a {
-    color: black;
+.giveaway-hero img {
+    width: 53%;
+    aspect-ratio: 16 / 9; /* Keeps the space reserved on desktop */
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
 }
 
-progress {
-    box-sizing: border-box;
-    display: inline-block;
-    block-size: .2em;
-    width: 99%;
-    background: #EDEEF0;
-    border-radius: 5px;
-    appearance: none;
-}
-
-.main {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-}
-
-
-section  {
-    border-style: solid;
-    border-radius: .75em;
-    border-width: 0em;
-    background-color: white;
-    padding: 2em;
-}
-
-section * {
-    background-color: white;
-}
-
-
-.navigation {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 2em 0 2em 0;
-    border-bottom: 1px solid #4e4e4e33; 
-    width: 100%;
-}
-
-.navigation > div:first-child {
-    display: flex;
-    flex-direction: row;
-    gap: 6em;
-    align-items: center;
-    padding: 0 1em;
-}
-
-
-@media (min-width: 480px) {
-
-    .navigation .material-symbols-outlined {
-        display: none;
-    }
-
-    .navigation > div:first-child {
-        display: flex;
-        justify-content: flex-start; /* Start items from the left */
-        align-items: center;
-        padding: 0 1em 0 1em;
-        gap: 0;
-        width: 100%;
-    }
-
-    .navigation > div:first-child a {
-        margin-left: 50%; /* Start the item at the 50% mark */
-        transform: translateX(-50%); /* Shift the item back by 50% of its own width */
-    }
-    .navigation > div:first-child div {
-        margin-left: auto;
-        padding-right: 12em;
-
-    }    
-}
-@media (min-width: 480px) {
-    .navigation {        
-        gap: 2em;
-    }  
-}
-
-.navigation-links {
-    display: none;
-}
-
-.navigation-links a:first-child{
-    color: #AF231C;
-    font-weight: bold;
-}
-
-@media (min-width: 480px) {
-    .navigation-links {
-        display: flex;
-        flex-direction: row;
-        gap: 1em;
-    }
-}
-
-#searchControl  {
-    display: none;
-}
-
-#searchControl:checked + label {
-    background-color: #AF231C;
-}
-
-.navigation-material-links {
-    display: flex;
-    flex-direction: row;
-    gap: 1em;
-}
-.material-icons, .material-icon-menu {
-    cursor: pointer;
-}
-
-.material-symbols-outlined {
-  font-variation-settings:
-    'FILL' 0,
-    'wght' 400,
-    'GRAD' 0,
-    'opsz' 24
-}
-
-.navigation .logo-text {
-    font-family: SI;
-    font-weight: bold;
-    font-size: 1.25em;
-}
-
-@media (min-width: 480px) {
-    .navigation .logo-text {
-        font-size: 1.75em;    
-    }
-}
-
-.navigation input {
-    width: 45%;
-    height: 2em;
-    border-radius: 1em;
-    padding: 0 0 0 1em;
-    outline: none;
-    background-color: white;
-    border-width: .025em;
-}
-
-.navigation a:hover {
-    color:#AF231C;
-}
-
-.navigation button {
-    border: none;
-}
-
-.sideBar {
-    width: 10em;
-    position: fixed;
-    z-index: 1;
-    top: 9.2em;
-    left: 0;
-    display: flex;
-    flex-direction: column;
-    padding: 1em;
-    height: 100%    
-}
-
-.sideBar a {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: left;
-    padding: .75em 0;
-    font-weight: 590;
-}
-
-.sideBar img {
-    width: 1.75em;
-    padding: 0 1em;
-}
-
-.sideBar a:hover {
-    color: #AF231C;
-    cursor: pointer;
-}
-
-.sideBar, .sideBar a, .sideBar img {
-    background: white;
-}
-
-/*//////// main highlight - BEGIN////////*/
-
-.main-singlegiveaway {
-    display: flex;
-    flex-direction: column;
-    padding: 5rem 1em 0 1em;
-    gap: 1em;
-    justify-content: center;
-}
-
-/* first child */
-.main-singlegiveaway > .main-singlegiveaway-component-one {
-    display: flex;
-    flex-direction: column;    
-    align-items: center;;
-    gap: .75em;
-}
-
-.main-singlegiveaway > .main-singlegiveaway-component-one img {
-    width: 80%;
-}
-
-.main-singlegiveaway > .main-singlegiveaway-component-one div {
-    display: flex;
-    flex-direction: column;
-    justify-content: left;
-    width: 100%;
-    gap: .75em;
-}
-
-.main-singlegiveaway > .main-singlegiveaway-component-one div > div:nth-child(1) {
-    font-weight: bold;
-    font-size: 1.15em;
-}
-
-
-.main-singlegiveaway > .main-singlegiveaway-component-one div > div:nth-child(1):hover {
-    color: #AF231C
-}
-
-.main-form {
+/* A grid to hold the details and the form side-by-side */
+.giveaway-content-wrapper {
     display: grid;
-    grid-template-rows: repeat(2, 1fr);
-    gap: 1em;
-    max-height: 60%;
-    margin: 0 0 1em;
+    grid-template-columns: 2fr 1.25fr;
+    gap: 2.5rem;
+    align-items: start;
 }
 
-.main-form h1 {
+/* --- (The rest of your CSS remains the same) --- */
+
+/* Left column with giveaway title and details */
+.giveaway-details h1 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    line-height: 1.3;
+    margin-bottom: 1rem;
+}
+
+.giveaway-description {
+    color: var(--text-secondary);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+}
+
+/* Container for meta info like dates */
+.giveaway-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background-color: var(--fd-bg-dark); /* Slightly darker for contrast */
+    border: 1px solid var(--fd-border);
+    border-radius: 8px;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.meta-item i {
+    font-size: 1.5rem;
+    color: var(--fd-blue-accent);
+    width: 30px;
     text-align: center;
-    margin: 2em 0 0 0;
 }
 
-.main-form {
+.meta-item div {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 3em;
 }
 
-.main-form div:nth-child(2) {
+.meta-item strong {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.meta-item span {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+/* Right column with the entry form (refined) */
+.entry-form-container {
+    background-color: var(--fd-bg-dark);
+    padding: 2rem;
+    border-radius: 8px;
+    border: 1px solid var(--fd-border);
+    position: sticky; 
+    top: 1.5rem; 
+    /* ADD THESE: This makes the container a flex column */
     display: flex;
     flex-direction: column;
-    gap: .75em;
+}
+
+/* ADD THIS NEW RULE for the form tag inside the container */
+.entry-form-container form {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1; /* This makes the form itself fill the container's height */
+}
+
+/* ADD THIS NEW RULE for our spacer div */
+.form-content-spacer {
+    margin-top: auto; /* This is the magic! It pushes everything after it to the bottom. */
+}
+
+.entry-form-container h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem; /* Tighter spacing */
+    text-align: left; /* Align to the left for a cleaner look */
+}
+
+.form-subheading {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.form-group { margin-bottom: 1.25rem; }
+
+.form-group input {
     width: 100%;
+    background-color: var(--fd-bg-light);
+    border: 1px solid var(--fd-border);
+    color: var(--text-primary);
+    padding: 0.8rem 1rem;
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s; /* Add smooth transition */
+}
+.form-group input:focus {
+    outline: none;
+    border-color: var(--fd-blue-accent);
+    box-shadow: 0 0 0 3px rgba(21, 117, 224, 0.4);
+}
+.form-group input::placeholder { /* Style placeholder text */
+    color: var(--text-secondary);
+    opacity: 0.7;
 }
 
-.buttonStyle {
-    background-color: #AF231C;
-    color: white;
-    padding: .5em 1em;
+.form-button {
+    width: 100%;
+    padding: 0.9rem; /* Slightly taller for better clickability */
+    border: none;
+    background-color: var(--fd-blue-accent);
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 700;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.form-button:hover { background-color: #3498db; }
+
+/*
+=====================================================
+    NEW: Static Message Page Styles (Email Page)
+=====================================================
+*/
+.static-content-box h1 { font-size: 1.8rem; font-weight: 600; border-bottom: 1px solid var(--fd-border); padding-bottom: 1rem; margin-bottom: 1.5rem; }
+.message-body { color: var(--text-secondary); line-height: 1.8; }
+.message-body p { margin-bottom: 1rem; } /* Style paragraphs inside the message */
+.return-home-button { display: inline-block; margin-top: 2rem; background-color: var(--fd-blue-accent); color: var(--text-primary); padding: 0.6rem 1.5rem; border-radius: 6px; font-weight: 600; }
+.return-home-button:hover { background-color: #3498db; }
+
+/*
+=====================================================
+    NEW: Form Validation & Error Styling
+=====================================================
+*/
+/* Style for an input field that has an error */
+.form-group input.input-error {
+    border-color: var(--danger-red);
+    box-shadow: 0 0 0 2px rgba(231, 76, 60, 0.4); /* Red glow */
+}
+
+/* The container for warning messages */
+.form-warning {
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: all 0.3s ease-in-out;
+    border-radius: 6px;
+    margin-top: 0;
+}
+
+/* The "active" state when there are errors to show */
+.form-warning.active {
+    opacity: 1;
+    max-height: 200px; /* Allow space for messages to appear */
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: rgba(231, 76, 60, 0.15); /* A subtle, theme-friendly red */
+    border: 1px solid var(--danger-red);
+}
+
+/* Style for each individual error message inside the box */
+.form-warning p {
+    color: var(--text-primary); /* Make text readable against the red bg */
+    font-weight: 500;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+.form-warning p:last-child {
+    margin-bottom: 0;
+}
+
+/*
+=====================================================
+    NEW: Mobile Navigation Styles
+=====================================================
+*/
+/* The Hamburger Button itself */
+.hamburger-button {
+    display: none; /* Hidden by default */
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 1001; /* Must be on top */
+}
+
+/* The Mobile Navigation Panel */
+.mobile-nav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 280px;
+    height: 100vh;
+    background-color: var(--fd-bg-dark);
+    z-index: 1000;
+    padding: 1rem;
+    border-left: 1px solid var(--fd-border);
+    transform: translateX(100%); /* Start off-screen */
+    transition: transform 0.3s ease-in-out;
+}
+.mobile-nav.open {
+    transform: translateX(0); /* Slide into view */
+    box-shadow: -10px 0 30px rgba(0,0,0,0.3);
+}
+.mobile-nav-header {
     display: flex;
-    justify-content: center;    
+    justify-content: space-between;
     align-items: center;
-    min-width: 50%;
-    transition: .25s;
-    font-size: 1em;
-    margin: 0 0 3em 0;
+    padding: 0.5rem 0.5rem 1.5rem 0.5rem;
+    border-bottom: 1px solid var(--fd-border);
 }
-
-.buttonStyle:hover {
-    background-color: #c94740;
+.mobile-nav-header h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+.close-button {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.5rem;
     cursor: pointer;
 }
-
-.main-form input  {
-    padding: 0 0 0 1em;
+.close-button:hover {
+    color: var(--text-primary);
 }
-
-.main-form input, .buttonStyle {
-    height: 3em;
-    border-radius: .75em;
-    border: solid;
-    border-width: thin;
+.mobile-nav-links ul {
+    list-style: none;
+    padding: 0;
+    margin-top: 1rem;
 }
-
-/*//////// main highlight - END////////*/
-
-.advertisement {
+.mobile-nav-links li a {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 0.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+    font-size: 1rem;
+}
+.mobile-nav-links li a:hover {
+    background-color: var(--fd-bg-med);
+}
+.mobile-nav-links li a i {
+    width: 25px;
+    color: var(--fd-blue-accent);
+}
+.mobile-nav-divider {
+    border: none;
+    border-top: 1px solid var(--fd-border);
+    margin: 1.5rem 0;
+}
+/* Ensure auth buttons in mobile menu fill width */
+.mobile-nav-links .nav-button {
     width: 100%;
-    background-color: aliceblue;
-    height: 10rem;
+    margin-bottom: 0.75rem;
 }
 
-.main-giveaways::before{
-    margin: 3em 0 0 0;
-    content: "FEATURED GIVEAWAYS";
-    text-align: center;
-    letter-spacing: .125em;
-    font-size: 1.25em;
-    font-weight: bold;
-}
-
-.main-giveaways {
+.mobile-nav-section-header {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: var(--text-secondary);
+    padding: 0.5rem 0.5rem 0.5rem 0.5rem;
     display: flex;
-    flex-direction: column;
-    padding: 0 4em 0 4em;
-    width: 80%;
-    gap: 1em;
+    align-items: center;
+    gap: 0.75rem;
+    margin-top: 1rem; /* Add some space above the header */
 }
 
-@media (max-width: 768px), (max-width: 480px) {
-    .main-giveaways {
-        padding: 0;
-        width: 90%;
+/* This will color the icon in the new header */
+.mobile-nav-section-header i {
+    color: var(--text-secondary);
+}
+
+/* Dark Overlay */
+.menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.6);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.menu-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Prevent body scroll when menu is open */
+.body-no-scroll {
+    overflow: hidden;
+}
+
+
+/*
+=====================================================
+    Responsive Design
+=====================================================
+*/
+@media (max-width: 1024px) {
+    .site-container { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .main-content { padding: 1.5rem; }
+    
+    /* Make single giveaway page stack on tablets */
+    .giveaway-content-wrapper {
+        grid-template-columns: 1fr; /* Stack columns */
+        gap: 2rem;
+    }
+    .entry-form-container {
+        position: static; /* Un-stick the form on smaller screens */
+        top: auto;
+    }
+
+    .giveaway-hero img {
+        width: 100%; /* Make the image full-width on tablet/mobile */
+        max-height: 300px; /* Optional but recommended: prevent image from being excessively tall on tablets */
+        aspect-ratio: auto; /* Let the browser determine the aspect ratio based on width and max-height */
+    }
+
+    .site-container { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .main-content { padding: 1.5rem; }
+
+    /* ADD these rules to show hamburger and hide desktop actions */
+    .hamburger-button {
+        display: block; /* Show the hamburger */
+        position: relative; /* z-index only works on positioned elements */
+        z-index: 1002;      /* Make it the topmost item in the header */
+    }
+    .nav-actions {
+        display: none; /* Hide the desktop "Log In" / "Sign Up" */
+    }    
+
+    .body-no-scroll .hamburger-button {
+        opacity: 0;
+        pointer-events: none; /* Prevents clicking the invisible button */
+        transition: opacity 0.2s ease;
     }
 }
-
-.main-giveaways img {
-    width: 10%;
+@media (max-width: 768px) {
+    .top-header { padding: 0 1rem; }
+    .nav-logo span { display: none; }
+    .nav-logo { font-size: 1.1rem; }
+    .nav-button { padding: 0.4rem 0.8rem; font-size: 0.85rem; }
+    .site-container { padding: 0; gap: 0; }
+    .main-content { padding: 1rem; border-radius: 0; }
+    .content-header h1 { font-size: 1.5rem; }
+    .giveaway-grid { grid-template-columns: 1fr; }
+    
+    /* Responsive styles for the new layout */
+    .giveaway-details h1 { font-size: 1.8rem; }
+    .entry-form-container { padding: 1.5rem; }
+    .giveaway-content-wrapper { gap: 1.5rem; }
 }
 
-@media (max-width: 768px), (max-width: 480px) {
-    .main-giveaways img {
-        display: none;
-    }
+/* Category Grid Styles */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
 }
 
-.main-giveaways > .main-giveaways-component{
-    display: flex;
-    flex-direction: column;
-    gap: 4rem;
-    margin: 3em 0;    
-}
-
-.main-giveaways > .main-giveaways-component a > div {
-    display: flex;
-    flex-direction: row;
-    gap: 3rem;
-}
-
-.main-giveaways > .main-giveaways-component > a > div > div > div:nth-child(1) {
-    font-weight: bold;
-    padding: 0 0 1em 0;
-}
-
-.main-giveaways > .main-giveaways-component > a > div > div > div:nth-child(2) {
-    font-size: .75rem;
-    color:#4e4e4e
-}
-
-
-.main-giveaways > .main-giveaways-component div:not(div > div):hover {
-    color: #AF231C
-}
-
-.pagenotfound {
+.category-card {
+    background-color: var(--fd-bg-dark);
+    border: 1px solid var(--fd-border);
+    border-radius: 8px;
+    padding: 1.5rem;
     display: flex;
     flex-direction: column;
     align-items: center;
-}
-
-.pagenotfound h1 {
-    font-size: 4em;
-    color: #AF231C;
-    margin-bottom: 0.5em;
-    font-family: SI;
-}
-
-.pagenotfound p {
-    font-size: 1.2em;
-    color: #4e4e4e;
-    margin-bottom: 2em;
-}
-
-.pagenotfound a {
-    background-color: #AF231C;
-    color: white;
-    padding: 1em 2em;
-    text-decoration: none;
-    border-radius: 0.5em;
-    transition: background-color 0.3s;
-    width: 13em;
     text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.pagenotfound a:hover {
-    background-color: #c94740;
+.category-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-color: var(--fd-blue-accent);
+}
+
+.card-icon {
+    font-size: 2.5rem;
+    color: var(--fd-blue-accent);
+    margin-bottom: 1rem;
+}
+
+.card-content {
+    width: 100%;
+}
+
+.card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.card-value {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.value-amount {
+    font-weight: 600;
+    color: var(--accent-green);
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.back-link:hover {
+    color: var(--text-primary);
+}
+
+.back-link i {
+    font-size: 0.9rem;
+}
+
+.no-categories-container {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 3rem;
+    background-color: var(--fd-bg-dark);
+    border: 1px solid var(--fd-border);
+    border-radius: 8px;
+}
+
+.no-categories-container i {
+    font-size: 3rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.no-categories-container h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+}
+
+.no-categories-container p {
+    color: var(--text-secondary);
 }

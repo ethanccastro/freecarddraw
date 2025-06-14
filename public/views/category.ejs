@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= categoryType %> GiftCard Draw</title>   
+    <%- include('partials/head.ejs') %>
+</head>
+<body>
+    <div class="top-header">
+        <%- include('partials/navigation.ejs') %>
+    </div>
+
+    <div class="site-container">
+        <!-- Sidebar Partial -->
+        <%- include('partials/sidebar.ejs') %>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-header">
+                <h1><%= categoryType %> Gift Cards</h1>
+                <nav class="content-sub-nav">
+                    <a href="/category/<%= categoryType %>" class="<%= activeTab === 'recent' ? 'active' : '' %>">Most Recent</a>
+                    <a href="/category/<%= categoryType %>/closed" class="<%= activeTab === 'closed' ? 'active' : '' %>">Closed</a>
+                </nav>
+            </div>
+
+            <div class="giveaway-grid">
+                <% if (giftcardGiveaway_vRows.length > 0) { %>
+                    <% for (var i = 0; i < giftcardGiveaway_vRows.length; i++) { %>
+                        <a href="<%= giftcardGiveaway_vRows[i].giftcardgiveaway_v_URLTITLE %>" class="giveaway-card">
+                            <div class="card-image">
+                                <img src="/images/<%= giftcardGiveaway_vRows[i].giftcardgiveaway_v_IMAGE %>" alt="<%= giftcardGiveaway_vRows[i].giftcardgiveaway_v_TITLE %>">
+                            </div>
+                            <div class="card-content">
+                                <h3 class="card-title"><%= giftcardGiveaway_vRows[i].giftcardgiveaway_v_TITLE %></h3>
+                                <div class="card-value">
+                                    <span class="value-amount">$<%= giftcardGiveaway_vRows[i].giftcardgiveaway_v_giftcardvalue %></span>
+                                </div>
+                                <div class="card-details">
+                                    <p class="card-date">
+                                        <% if (activeTab === 'recent') { %>
+                                            Started: <%= new Date(giftcardGiveaway_vRows[i].giftcardgiveaway_v_giveawaybegindate).toLocaleDateString() %>
+                                        <% } else { %>
+                                            Ended: <%= new Date(giftcardGiveaway_vRows[i].giftcardgiveaway_v_giveawayenddate).toLocaleDateString() %>
+                                        <% } %>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="card-status">
+                                <% if (giftcardGiveaway_vRows[i].user_name) { %>
+                                    <div class="winner-info">
+                                        <i class="fas fa-trophy"></i>
+                                        <span>Winner: <strong><%= giftcardGiveaway_vRows[i].user_name %></strong></span>
+                                    </div>
+                                <% } else { %>
+                                    <div class="timer-info">
+                                        <i class="fas fa-clock"></i>
+                                        <strong class="countdown-timer" data-end-date="<%= new Date(giftcardGiveaway_vRows[i].giftcardgiveaway_v_giveawayenddate).toISOString() %>">
+                                            Loading...
+                                        </strong>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </a>
+                    <% } %>
+                <% } else { %>
+                    <div class="no-giveaways-container">
+                        <i class="fas fa-box-open"></i>
+                        <% if (activeTab === 'closed') { %>
+                            <h2>No Closed Giveaways</h2>
+                            <p>There are no closed giveaways for <%= categoryType %> gift cards.</p>
+                        <% } else { %>
+                            <h2>No Active Giveaways</h2>
+                            <p>There are currently no active giveaways for <%= categoryType %> gift cards. Please check back soon!</p>
+                        <% } %>
+                    </div>
+                <% } %>
+            </div>
+        </main>
+    </div>
+    <%- include('partials/mobile-nav.ejs') %>
+    <%- include('partials/scripts.ejs') %>
+</body>
+</html> 

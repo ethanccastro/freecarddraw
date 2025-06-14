@@ -5,15 +5,26 @@
     <%- include('partials/head.ejs') %>
 </head>
 <body>
-    <div class="main">
+    <div class="top-header">
         <%- include('partials/navigation.ejs') %>
-        <div class="main-singlegiveaway">
-            <section class="main-singlegiveaway-emailconfirmation">
-                <div>
+    </div>
+
+    <div class="site-container">
+        <!-- Sidebar Partial -->
+        <%- include('partials/sidebar.ejs') %>
+
+        <!-- Main Content for the Email Message -->
+        <main class="main-content">
+            <div class="static-content-box">
+                <h1><%= message.subject %></h1>
+                <div class="message-body">
                     <%- message.body %>
                 </div>
-            </section> 
-        </div>
+                <a href="/" class="return-home-button">Return Home</a>
+            </div>
+        </main>
     </div>
+    <%- include('partials/mobile-nav.ejs') %>
+    <%- include('partials/scripts.ejs') %>
 </body>
 </html>

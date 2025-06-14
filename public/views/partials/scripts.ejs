@@ -1,0 +1,79 @@
+<!-- This partial contains all the site-wide client-side JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        // --- Navigation Menu Script ---
+        const hamburgerBtn = document.getElementById('hamburger-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const closeMenuBtn = document.getElementById('close-menu-btn');
+        const overlay = document.getElementById('menu-overlay');
+
+        function openMenu() {
+            if (mobileMenu && overlay) {
+                mobileMenu.classList.add('open');
+                overlay.classList.add('active');
+                document.body.classList.add('body-no-scroll');
+            }
+        }
+
+        function closeMenu() {
+            if (mobileMenu && overlay) {
+                mobileMenu.classList.remove('open');
+                overlay.classList.remove('active');
+                document.body.classList.remove('body-no-scroll');
+            }
+        }
+
+        // Add checks to prevent errors if elements don't exist
+        if (hamburgerBtn) {
+            hamburgerBtn.addEventListener('click', openMenu);
+        }
+        if (closeMenuBtn) {
+            closeMenuBtn.addEventListener('click', closeMenu);
+        }
+        if (overlay) {
+            overlay.addEventListener('click', closeMenu);
+        }
+
+
+        // --- Countdown Timers Script ---
+        const countdownElements = document.querySelectorAll('.countdown-timer');
+
+        // This function is defined outside the loop for efficiency
+        const updateTimer = (element) => {
+            const endDate = new Date(element.dataset.endDate).getTime();
+            const now = new Date().getTime();
+            const distance = endDate - now;
+
+            if (distance < 0) {
+                element.textContent = "Ended";
+                // Stop the interval for this timer since it's finished
+                const intervalId = parseInt(element.dataset.intervalId, 10);
+                if (intervalId) {
+                    clearInterval(intervalId);
+                }
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            let timerString = '';
+            if (days > 0) timerString += `${days}d `;
+            timerString += `${String(hours).padStart(2, '0')}h `;
+            timerString += `${String(minutes).padStart(2, '0')}m `;
+            timerString += `${String(seconds).padStart(2, '0')}s`;
+
+            element.textContent = timerString.trim();
+        };
+
+        countdownElements.forEach(el => {
+            updateTimer(el); // Run once immediately
+            const intervalId = setInterval(() => updateTimer(el), 1000); // Then update every second
+            el.dataset.intervalId = intervalId; // Store interval ID to clear it later
+        });
+
+    });
+</script>

@@ -3,48 +3,109 @@
 <head>
     <title><%= giftcardGiveaway_vRow.giftcardgiveaway_v_TITLE %></title>
     <%- include('partials/head.ejs') %>
+    <style>
+        .winning-number {
+            color: #f1c40f;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+    </style>
 </head>
 <body>
-    <div class="main">
+    <div class="top-header">
         <%- include('partials/navigation.ejs') %>
-        <div class="main-singlegiveaway">
-            <section class="main-singlegiveaway-component-one">
-                <img src="../images/<%=giftcardGiveaway_vRow.giftcardgiveaway_v_IMAGE %>">
-                    <div>
-                        <div>
-                            <%= giftcardGiveaway_vRow.giftcardgiveaway_v_TITLE %>
-                        </div>
-                        <div>
-                            <%= giftcardGiveaway_vRow.giftcardgiveaway_v_giveawaybegindate.toLocaleString('en-us',{month:'short', year:'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric'}) %>
-                        </div>
-                    </div>
-            </section> 
-
-            <form action="" method="post" id="form">
-                <section class="main-form">
-                    <h1>
-                        Enter the giveaway
-                    </h1>
-                    <div>
-                        <div>
-                            Email:
-                        </div>
-                        <input id="email" name="email"></input>
-                        <div>
-                            Username:
-                        </div>
-                        <input id="username" name="username"></input>                        
-                    </div>
-                    <button id="entry" class="buttonStyle" type="submit">
-                        Get entry
-                    </button>
-                    <div id="warning">
-
-                    </div>
-                </section>
-                <input type="hidden" id="uuid" name="uuid"> 
-            </form>
-        </div>
     </div>
+
+    <div class="site-container">
+        <!-- Sidebar Partial -->
+        <%- include('partials/sidebar.ejs') %>
+
+        <!-- Main Content for the Single Giveaway -->
+        <main class="main-content">
+            <div class="giveaway-single-page">
+                <!-- Content and Form Wrapper -->
+                <div class="giveaway-content-wrapper">
+
+                    <!-- Left Column: Info & Details -->
+                    <div class="giveaway-details">
+                        
+                        <!-- MOVED HERE: The image is now inside the left column -->
+                        <div class="giveaway-hero">
+                            <img src="/images/<%= giftcardGiveaway_vRow.giftcardgiveaway_v_IMAGE %>" alt="<%= giftcardGiveaway_vRow.giftcardgiveaway_v_TITLE %>">
+                        </div>
+
+                        <h1><%= giftcardGiveaway_vRow.giftcardgiveaway_v_TITLE %></h1>  
+
+                        <div class="giveaway-meta">
+                            <div class="meta-item">
+                                <i class="fas fa-calendar-alt"></i>
+                                <div>
+                                    <strong>Giveaway Started</strong>
+                                    <span id="start-date"><%= new Date(giftcardGiveaway_vRow.giftcardgiveaway_v_giveawaybegindate).toLocaleString() %></span>
+                                </div>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-hourglass-half"></i>
+                                <div>
+                                    <strong>Ends In</strong>
+                                    <span class="countdown-timer" data-end-date="<%= new Date(giftcardGiveaway_vRow.giftcardgiveaway_v_giveawayenddate).toISOString() %>">Calculating...</span>
+                                </div>
+                            </div>
+                            <% if (new Date() > new Date(giftcardGiveaway_vRow.giftcardgiveaway_v_giveawayenddate) && giftcardGiveaway_vRow.giftcardgiveaway_v_giveawaynumber) { %>
+                            <div class="meta-item">
+                                <i class="fas fa-trophy"></i>
+                                <div>
+                                    <strong>Winning Number</strong>
+                                    <span class="winning-number"><%= giftcardGiveaway_vRow.giftcardgiveaway_v_giveawaynumber %></span>
+                                </div>
+                            </div>
+                            <% } %>
+                            <!-- Debug information -->
+                           
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Entry Form -->
+                    <% if (new Date() <= new Date(giftcardGiveaway_vRow.giftcardgiveaway_v_giveawayenddate)) { %>
+                    <div class="entry-form-container">
+                        <form action="" method="post" id="form">
+                            <h2>Enter Now!</h2>
+                            <p class="form-subheading">Complete the fields below to enter.</p>
+                            
+                            <div class="form-group">
+                                <label for="email">Email Address</label>
+                                <input type="text" id="email" name="email">
+                            </div>
+                            <div class="form-group">
+                                <label for="username">Username</label>
+                                <input type="text" id="username" name="username">
+                            </div>
+
+                            <!-- ADD THIS DIV: This will push the button to the bottom -->
+                            <div class="form-content-spacer"></div>
+                            
+                            <button type="submit" id="entry" class="form-button">Get My Entry</button>
+                            
+                            <div id="warning" class="form-warning">
+                                <!-- Warning messages will appear here -->
+                            </div>
+                            <input type="hidden" id="uuid" name="uuid">
+                        </form>
+                    </div>
+                    <% } else { %>
+                    <div class="entry-form-container">
+                        <div class="giveaway-closed-message">
+                            <h2>Giveaway Closed</h2>
+                            <p>This giveaway has ended.</p>
+                        </div>
+                    </div>
+                    <% } %>
+
+                </div>
+            </div>
+        </main>
+    </div>
+    <%- include('partials/mobile-nav.ejs') %>
+    <%- include('partials/scripts.ejs') %>
 </body>
 </html>

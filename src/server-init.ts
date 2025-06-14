@@ -14,11 +14,17 @@ import ErrorHandler from "./services/utils/errorhandler.utilsService.js"
  
 import { registerIndexRouter } from "./controllers/routes/index.route.js";
 import { registerGiveawayRoute } from "./controllers/routes/giveaway.route.js";
+import { registerCategoryRouter } from "./controllers/routes/category.route.js";
 import { registerProfanityApi } from "./controllers/api/profanity.api.js";
+import { registerGiftcardCategoriesApi } from "./controllers/api/giftcardcategories.api.js";
+import { createPartialsMiddleware } from "./middleware/partials.middleware.js";
 
 import IndexRouteService from "./services/routes/index.routeService.js";
 import GiveawayRouteService from "./services/routes/giveaway.routeService.js";
+import CategoryRouteService from "./services/routes/category.routeService.js";
 import ProfanityApiService from "./services/api/profanity.apiService.js";
+import GiftcardCategoriesApiService from "./services/api/giftcardcategories.apiService.js";
+import PartialsService from "./services/partials/partials.service.js";
 
 
 export interface Services {
@@ -59,21 +65,28 @@ export async function initMiddleware(app: express.Application): Promise<void> {
             orm.entry, 
             orm.entryusertoken);
 
-            
+        const categoryRouteService = new CategoryRouteService(
+            orm.giftcardGiveaway_v);
+
         const profanityApiService = new ProfanityApiService();
-        
+        const giftcardCategoriesApiService = new GiftcardCategoriesApiService(orm.giftcardGiveaway_v);
+        const partialsService = new PartialsService(orm.giftcardGiveaway_v);
         
         app.use((req: Request, res: Response, next: NextFunction) => {
             RequestContext.create(orm.em, next);
         });
+
+        // Add partials middleware before routes
+        app.use(createPartialsMiddleware(partialsService));
         
         // controller - routes
+        app.use('/', registerCategoryRouter(categoryRouteService));
         app.use('/', registerIndexRouter(indexRouteService));
         app.use('/:giftcardgiveaway_v_ID/:giftcardgiveaway_v_TITLE', registerGiveawayRoute(giveawayRouteService));
         
         // controller - api
-        app.use('/profanity', registerProfanityApi(profanityApiService));         
-
+        app.use('/profanity', registerProfanityApi(profanityApiService));
+        app.use('/api/giftcard-categories', registerGiftcardCategoriesApi(giftcardCategoriesApiService));
     }
 
 export async function initORM(options?: Options): Promise<Services> {
