@@ -65,15 +65,7 @@ jobs:
         fi
         echo "All required environment variables are set"
 
-    - name: Create SSH key file
-      run: |
-        set -e
-        echo "Setting up SSH key..."
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
-        chmod 600 ~/.ssh/deploy_key
-        eval "$(ssh-agent -s)"
-        ssh-add ~/.ssh/deploy_key
+
 
     - name: Set environment variables
       run: |
@@ -112,7 +104,10 @@ jobs:
         EOF
         fi
 
- 
+    - name: Setup SSH Agent
+      uses: webfactory/ssh-agent@v0.9.0
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
     - name: Deploy to EC2
       run: |
@@ -122,16 +117,16 @@ jobs:
         # Copy files to EC2
         echo "Starting file transfer..."
         rsync -avz --delete \
-          -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+          -e "ssh -o StrictHostKeyChecking=no" \
           --exclude '.git' \
           --exclude '.github' \
           --exclude 'node_modules' \
           ./ ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/app/ || exit 1
-
+    
         echo "Files transferred successfully. Starting deployment..."
         
         # Execute deployment commands on EC2
-        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} '
+        ssh -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} '
           set -e
           cd /home/ubuntu/app
           echo "Installing dependencies..."
