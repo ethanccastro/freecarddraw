@@ -112,18 +112,7 @@ jobs:
         EOF
         fi
 
-    - name: Backup Current Version
-      run: |
-        set -e
-        echo "Creating backup of current version..."
-        ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.EC2_HOST }} '
-          if [ -d "/home/ubuntu/app" ]; then
-            tar -czf /home/ubuntu/app_backup_$(date +%Y%m%d_%H%M%S).tar.gz /home/ubuntu/app
-            echo "Backup created successfully"
-          else
-            echo "No existing app directory to backup"
-          fi
-        '
+ 
 
     - name: Deploy to EC2
       run: |
