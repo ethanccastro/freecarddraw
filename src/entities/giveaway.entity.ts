@@ -29,16 +29,26 @@ export class Giveaway extends BaseEntity {
     @Property( {nullable: true} )
     giveaway_number: number | null = null;
 
+    @Property( {length: 50, nullable: false} )
+    giveaway_code!: string;    
+
+    @Property( {length: 50, nullable: true} )
+    giveaway_pin!: string;    
+
     constructor(
         giveaway_giftcarduuid: string,
         giveaway_begindate: Date,
         giveaway_enddate: Date,
-        giveaway_number: number) {
+        giveaway_number: number,
+        giveaway_code: string,
+        giveaway_pin: string) {
 
         super();
         this.giveaway_giftcarduuid = giveaway_giftcarduuid;
         this.giveaway_begindate = giveaway_begindate;
         this.giveaway_enddate = giveaway_enddate;
         this.giveaway_number = giveaway_number;
+        this.giveaway_code = giveaway_code;
+        this.giveaway_pin = giveaway_pin;
       }        
 }

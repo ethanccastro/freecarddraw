@@ -24,7 +24,7 @@ export default class GiveawayEmail {
 
     static async sendEmailConfirmation(emailOptions: EmailOptions): Promise<void> {
         try {
-            const verificationLink = `http://${process.env.URL}/${emailOptions.giveawayid}/${emailOptions.giveawaytitle}/confirm/verifygiveaway?id=${emailOptions.verificationToken}`;
+            const verificationLink = `https://${process.env.URL}/${emailOptions.giveawayid}/${emailOptions.giveawaytitle}/confirm/verifygiveaway?id=${emailOptions.verificationToken}`;
             
             await this.transporter.sendMail({
                 from: process.env.NODEMAILER_AUTH_USER,
