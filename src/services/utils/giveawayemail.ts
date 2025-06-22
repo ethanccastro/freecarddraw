@@ -17,7 +17,7 @@ interface EmailOptions {
 
 export default class GiveawayEmail {
     private static transporter = nodemailer.createTransport({
-        service: 'gmail',
+        service: process.env.NODEMAILER_SERVICE,
         auth: {
             user: process.env.NODEMAILER_AUTH_USER,
             pass: process.env.NODEMAILER_AUTH_PASS
