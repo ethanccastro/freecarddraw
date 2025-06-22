@@ -29,11 +29,16 @@ export default class CategoryRouteService {
     async getClosedGiveawaysByType(type: string): Promise<GiftcardGiveaway_V[]> {
         try {
             const sql = `
-                SELECT *
-                FROM giftcardgiveaway_v
-                WHERE giftcardgiveaway_v_giftcardtype = ?
-                AND giftcardgiveaway_v_giveawayenddate <= NOW()
-                ORDER BY giftcardgiveaway_v_giveawayenddate DESC
+                SELECT 
+                    *
+                FROM 
+                    giftcardgiveaway_v
+                WHERE 
+                    1 = 1
+                    AND giftcardgiveaway_v_giftcardtype = ?
+                    AND giftcardgiveaway_v_giveawayenddate <= NOW()
+                ORDER BY 
+                    giftcardgiveaway_v_giveawayenddate DESC
             `;
             
             const result = await this.GiftcardGiveaway_VRepository.getEntityManager().execute(sql, [type]);
@@ -46,9 +51,13 @@ export default class CategoryRouteService {
     async validateCategoryType(type: string): Promise<boolean> {
         try {
             const sql = `
-                SELECT COUNT(*) as count
-                FROM giftcardgiveaway_v
-                WHERE giftcardgiveaway_v_giftcardtype = ?
+                SELECT 
+                    COUNT(*) as count
+                FROM 
+                    giftcardgiveaway_v
+                WHERE 
+                    1 = 1
+                    AND giftcardgiveaway_v_giftcardtype = ?
             `;
             
             const result = await this.GiftcardGiveaway_VRepository.getEntityManager().execute(sql, [type]);

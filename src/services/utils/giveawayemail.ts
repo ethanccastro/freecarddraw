@@ -8,6 +8,8 @@ interface EmailOptions {
     giveawayid: string;
     entryusertokenuuid?: string;
     giveawaytitle?: string;
+    giveawaycode?: string;
+    giveawaypin?: string;
     verificationToken?: string;
     entryNumber?: number;
     giftcard?: string;
@@ -62,15 +64,18 @@ export default class GiveawayEmail {
 
     static async sendEmailEntryNumberWinner(emailOptions: EmailOptions): Promise<void> {
         try {
-            if (!emailOptions.giveawaytitle) {
-                throw new Error('Giveaway title is required for sending winner notification');
+            if (!emailOptions.giveawaytitle || !emailOptions.giveawaycode) {
+                throw new Error('Giveaway title and code are required for sending winner notification');
             }
 
             await this.transporter.sendMail({
                 from: process.env.NODEMAILER_AUTH_USER,
                 to: emailOptions.entryemail,
                 subject: `Congratulations! You've Won! For Giveaway ID: [${emailOptions.giveawayid}]`,
-                html: winnerTemplate(emailOptions.giveawaytitle),
+                html: winnerTemplate(
+                    emailOptions.giveawaytitle, 
+                    emailOptions.giveawaycode, 
+                    emailOptions.giveawaypin),
             });
         } catch (error: unknown) {
             if (error instanceof Error) {

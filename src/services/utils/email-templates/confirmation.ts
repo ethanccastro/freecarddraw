@@ -107,6 +107,23 @@ export const confirmationTemplate = (verificationLink: string) => `
                 font-size: 1.5rem;
             }
         }
+
+        .website-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--fd-border);
+        }
+
+        .website-name {
+            color: var(--fd-blue-accent);
+            font-size: 1.5rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        .website-name:hover {
+            color: #3498db;
+        }
     </style>
 </head>
 <body>
@@ -116,6 +133,9 @@ export const confirmationTemplate = (verificationLink: string) => `
                 <table role="presentation" class="email-container">
                     <tr>
                         <td>
+                            <div class="website-header">
+                                <a href="https://freecarddraw.com" class="website-name">FreeCardDraw.com</a>
+                            </div>
                             <h1>Confirm Your Email</h1>
                             <p>To finalize your entry and receive your unique giveaway number, please confirm your email address by clicking the button below:</p>
                             <a href="${verificationLink}" class="verify-button">Confirm Email</a>

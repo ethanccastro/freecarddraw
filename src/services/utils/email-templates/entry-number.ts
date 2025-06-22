@@ -74,17 +74,36 @@ export const entryNumberTemplate = (entryNumber: number) => `
             font-size: 1rem;
         }
 
-        .entry-number {
-            font-size: 2.2rem;
-            color: var(--accent-green);
+        .website-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--fd-border);
+        }
+
+        .website-name {
+            color: var(--fd-blue-accent);
+            font-size: 1.5rem;
             font-weight: 700;
-            margin: 1.5rem 0;
-            padding: 1.5rem;
+            text-decoration: none;
+        }
+
+        .website-name:hover {
+            color: #3498db;
+        }
+
+        .entry-number {
+            font-size: 3rem;
+            color: var(--accent-green);
+            font-weight: 800;
+            margin: 2rem 0;
+            padding: 2rem;
             background-color: var(--fd-bg-dark);
-            border-radius: 6px;
-            border: 1px solid var(--fd-border);
+            border-radius: 8px;
+            border: 2px solid var(--accent-green);
             display: inline-block;
-            min-width: 200px;
+            min-width: 250px;
+            text-shadow: 0 0 10px rgba(46, 204, 113, 0.3);
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.2);
         }
 
         .footer {
@@ -117,6 +136,9 @@ export const entryNumberTemplate = (entryNumber: number) => `
                 <table role="presentation" class="email-container">
                     <tr>
                         <td>
+                            <div class="website-header">
+                                <a href="https://freecarddraw.com" class="website-name">FreeCardDraw.com</a>
+                            </div>
                             <h1>Your Entry Number</h1>
                             <p>Thank you for confirming your email address. You are now entered into the giveaway!</p>
                             <div class="entry-number">${entryNumber}</div>

@@ -1,4 +1,7 @@
-export const winnerTemplate = (giveawayTitle: string) => `
+export const winnerTemplate = (
+    giveawayTitle: string,
+    giveawayCode: string,
+    giveawayPin?: string) => `
 <!DOCTYPE html>
 <html>
 <head>
@@ -74,15 +77,49 @@ export const winnerTemplate = (giveawayTitle: string) => `
             font-size: 1rem;
         }
 
-        .prize {
+        .website-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--fd-border);
+        }
+
+        .website-name {
+            color: var(--fd-blue-accent);
             font-size: 1.5rem;
-            color: var(--accent-green);
             font-weight: 700;
-            margin: 1.5rem 0;
-            padding: 1.5rem;
+            text-decoration: none;
+        }
+
+        .website-name:hover {
+            color: #3498db;
+        }
+
+        .prize {
+            font-size: 1.8rem;
+            color: var(--winner-gold);
+            font-weight: 700;
+            margin: 2rem 0;
+            padding: 2rem;
             background-color: var(--fd-bg-dark);
-            border-radius: 6px;
+            border-radius: 8px;
+            border: 2px solid var(--winner-gold);
+            text-shadow: 0 0 10px rgba(241, 196, 15, 0.3);
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.2);
+        }
+
+        .code-info {
+            background-color: var(--fd-bg-dark);
+            padding: 1.5rem;
+            border-radius: 8px;
             border: 1px solid var(--fd-border);
+            margin: 1.5rem 0;
+        }
+
+        .code-info p {
+            margin: 0.5rem 0;
+            font-size: 1.2rem;
+            color: var(--accent-green);
+            font-weight: 600;
         }
 
         .action-button {
@@ -133,13 +170,19 @@ export const winnerTemplate = (giveawayTitle: string) => `
                 <table role="presentation" class="email-container">
                     <tr>
                         <td>
+                            <div class="website-header">
+                                <a href="https://freecarddraw.com" class="website-name">FreeCardDraw.com</a>
+                            </div>
                             <h1>🎉 Congratulations, Winner! 🎉</h1>
                             <p>Amazing news! Your entry has been selected, and you are a winner in the giveaway! We're so excited for you.</p>
                             <div class="prize">
                                 <p>${giveawayTitle}</p>
                             </div>
-                            <p>To claim your prize, please click the button below:</p>
-                            <a href="/claim-prize" class="action-button">Claim Your Prize</a>
+                            <p>Here are your giftcard details:</p>
+                            <div class="code-info">
+                                ${giveawayCode ? `<p>Code: ${giveawayCode}</p>` : ``}
+                                ${giveawayPin ? `<p>Pin: ${giveawayPin}</p>` : ``}
+                            </div>
                             <div class="footer">
                                 <p>Thank you for participating!</p>
                             </div>

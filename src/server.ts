@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { initMiddleware } from './server-init.js';
 import express from "express";
+import './services/workerthread.js';  // Import the worker thread
 
 const app = express();
 

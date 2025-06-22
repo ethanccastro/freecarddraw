@@ -27,10 +27,10 @@ export async function giveawayEndEventService(
         return;
     }    
 
-    const entryRows = result[0] as Entry[];
+    const entryRows = result[0] as (Entry & { entry_giveawayuuid: string })[];
     
     const giveawayUUIDList = entryRows
-        .map((entryRow: Entry) => entryRow.giftcardgiveaway_v.giftcardgiveaway_v_giveawayuuid);
+        .map((entryRow) => entryRow.entry_giveawayuuid);
 
     let giftcardGiveaway_VMap = new Map<string, GiftcardGiveaway_V>();
 
@@ -42,18 +42,19 @@ export async function giveawayEndEventService(
          giftcardgiveaway_v_giveawayuuid: { $in: giveawayUUIDList }
     });
 
-
     for (const giftcardGiveaway_VRow of giftcardGiveaway_VRows) {
         giftcardGiveaway_VMap.set(giftcardGiveaway_VRow.giftcardgiveaway_v_giveawayuuid, giftcardGiveaway_VRow);
     }
 
     for (const entryRow of entryRows) {
-        const giftcardGiveaway_VRow = entryRow.giftcardgiveaway_v ? giftcardGiveaway_VMap.get(entryRow.giftcardgiveaway_v.giftcardgiveaway_v_giveawayuuid) : undefined;
-        if (giftcardGiveaway_VRow?.giftcardgiveaway_v_giveawayuuid) {
+        let giftcardGiveaway_VRow =  giftcardGiveaway_VMap.get(entryRow.entry_giveawayuuid);
+        if (giftcardGiveaway_VRow) {        
             GiveawayEmail.sendEmailEntryNumberWinner({
                 giveawayid: giftcardGiveaway_VRow.giftcardgiveaway_v_ID,
                 entryemail: entryRow.entry_email,
-                giftcard: giftcardGiveaway_VRow.giftcardgiveaway_v_TITLE
+                giveawaytitle: giftcardGiveaway_VRow.giftcardgiveaway_v_TITLE,
+                giveawaycode: giftcardGiveaway_VRow.giftcardgiveaway_v_giveawaycode,
+                giveawaypin: giftcardGiveaway_VRow.giftcardgiveaway_v_giveawaypin,
             });
         }
     }
@@ -65,5 +66,5 @@ export async function giveawayEndEventService(
         throw new ErrorHandler.NotFoundError(ServiceTrigger.name, THIRTYSECONDS);
     }
     serviceTriggerRow.servicetrigger_lastexecutedtime = new Date();
-    em.flush()    
+    await em.flush();
 }

@@ -35,7 +35,6 @@ private readonly entryUserTokenRepository: EntityRepository<EntryUserToken>;
                 throw new ErrorHandler.NotFoundError(GiftcardGiveaway_V.name, giveawayID)
             }
 
-            // If the giveaway is closed and has a winning number, get the winner's entry
             if (new Date() > new Date(giftcardGiveaway_VRow.giftcardgiveaway_v_giveawayenddate) && 
                 giftcardGiveaway_VRow.giftcardgiveaway_v_giveawaynumber) {
                 const winnerEntry = await this.entryRepository.findOne({
@@ -43,7 +42,6 @@ private readonly entryUserTokenRepository: EntityRepository<EntryUserToken>;
                     entry_giveawaynumber: giftcardGiveaway_VRow.giftcardgiveaway_v_giveawaynumber
                 });
                 if (winnerEntry) {
-                    // Add the winner's username to the giveaway row
                     (giftcardGiveaway_VRow as any).winner_username = winnerEntry.entry_name;
                 }
             }

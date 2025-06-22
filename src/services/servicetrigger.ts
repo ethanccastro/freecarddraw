@@ -39,11 +39,11 @@ export default class ServiceTriggerService {
                         serviceTriggerRepository
                     );
                 } catch (error) {
-                    console.log('ERROR YOU FOOL!!');
+                    console.log(error);
                 }
             }, THIRTYSECONDS);
         } catch (error) {
-            console.log('ERROR YOU FOOL!!');
+            console.log(error);
             throw error;
         }
     }

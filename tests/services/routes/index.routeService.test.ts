@@ -10,13 +10,11 @@ describe('IndexRouteService', () => {
     let indexRouteService: IndexRouteService;
 
     beforeEach(() => {
-        // Create mock repository
         giftcardGiveaway_VRepositoryMock = {
             find: jest.fn(),
             createQueryBuilder: jest.fn()
         } as unknown as jest.Mocked<EntityRepository<GiftcardGiveaway_V>>;
 
-        // Initialize service with mock repository
         indexRouteService = new IndexRouteService(giftcardGiveaway_VRepositoryMock);
     });
 
@@ -42,7 +40,6 @@ describe('IndexRouteService', () => {
         });
 
         it('should throw error when no opened giveaways found', async () => {
-            // This test is not valid for the current implementation, so we can skip or remove it.
         });
     });
 

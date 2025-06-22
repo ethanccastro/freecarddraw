@@ -23,6 +23,12 @@ export class GiftcardGiveaway_V {
     
     @Property( {nullable: true} )
     giftcardgiveaway_v_giveawaynumber: number | null = null;
+
+    @Property( {length: 255, nullable: false} )
+    giftcardgiveaway_v_giveawaycode!: string;
+    
+    @Property( {length: 255, nullable: true} )
+    giftcardgiveaway_v_giveawaypin!: string;         
     
     @Property( {length: 255, nullable: false} )
     giftcardgiveaway_v_TITLE!: string;

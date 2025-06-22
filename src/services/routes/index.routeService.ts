@@ -2,7 +2,6 @@
 
 import { EntityRepository } from "@mikro-orm/mysql";
 import { GiftcardGiveaway_V } from "../../entities/giftcardgiveaway_v.entity.js";
-import ErrorHandler from "../utils/errorhandler.utilsService.js";
 
 export default class IndexRouteService {
 
@@ -18,10 +17,15 @@ export default class IndexRouteService {
                 SELECT DISTINCT 
                     giftcardgiveaway_v_giftcardtype as type,
                     MAX(CAST(giftcardgiveaway_v_giftcardvalue AS SIGNED)) as value
-                FROM giftcardgiveaway_v
-                WHERE giftcardgiveaway_v_giveawayenddate > NOW()
-                GROUP BY giftcardgiveaway_v_giftcardtype
-                ORDER BY type ASC
+                FROM 
+                    giftcardgiveaway_v
+                WHERE
+                    1 = 1 
+                    AND giftcardgiveaway_v_giveawayenddate > NOW()
+                GROUP BY 
+                    giftcardgiveaway_v_giftcardtype
+                ORDER BY 
+                    type ASC
             `;
             
             const result = await this.GiftcardGiveaway_VRepository.getEntityManager().execute(sql);
@@ -34,10 +38,15 @@ export default class IndexRouteService {
     async getRecentActiveGiveaways(): Promise<GiftcardGiveaway_V[]> {
         try {
             const sql = `
-                SELECT *
-                FROM giftcardgiveaway_v
-                WHERE giftcardgiveaway_v_giveawayenddate > NOW()
-                ORDER BY giftcardgiveaway_v_giveawaybegindate DESC
+                SELECT 
+                    *
+                FROM 
+                    giftcardgiveaway_v
+                WHERE
+                    1 = 1 
+                    AND giftcardgiveaway_v_giveawayenddate > NOW()
+                ORDER BY 
+                    giftcardgiveaway_v_giveawaybegindate DESC
                 LIMIT 10
             `;
             
@@ -55,10 +64,15 @@ export default class IndexRouteService {
                 SELECT DISTINCT 
                     giftcardgiveaway_v_giftcardtype as type,
                     MAX(CAST(giftcardgiveaway_v_giftcardvalue AS SIGNED)) as value
-                FROM giftcardgiveaway_v
-                WHERE giftcardgiveaway_v_giveawayenddate <= NOW()
-                GROUP BY giftcardgiveaway_v_giftcardtype
-                ORDER BY type ASC
+                FROM 
+                    giftcardgiveaway_v
+                WHERE
+                    1 = 1 
+                    AND giftcardgiveaway_v_giveawayenddate <= NOW()
+                GROUP BY 
+                    giftcardgiveaway_v_giftcardtype
+                ORDER BY 
+                    type ASC
             `;
             
             const result = await this.GiftcardGiveaway_VRepository.getEntityManager().execute(sql);
@@ -102,10 +116,15 @@ export default class IndexRouteService {
     async getClosedGiveaways(): Promise<GiftcardGiveaway_V[]> {
         try {
             const sql = `
-                SELECT *
-                FROM giftcardgiveaway_v
-                WHERE giftcardgiveaway_v_giveawayenddate <= NOW()
-                ORDER BY giftcardgiveaway_v_giveawayenddate DESC
+                SELECT 
+                    *
+                FROM 
+                    giftcardgiveaway_v
+                WHERE 
+                    1 = 1
+                    AND giftcardgiveaway_v_giveawayenddate <= NOW()
+                ORDER BY 
+                    giftcardgiveaway_v_giveawayenddate DESC
             `;
             
             const result = await this.GiftcardGiveaway_VRepository.getEntityManager().execute(sql);

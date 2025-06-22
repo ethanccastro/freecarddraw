@@ -14,7 +14,9 @@ CREATE TABLE giveaway (
     giveaway_giftcarduuid VARCHAR(36),
     giveaway_begindate DATETIME NOT NULL,
     giveaway_enddate DATETIME,
-    giveaway_number varchar(17)
+    giveaway_number varchar(17),
+    giveaway_code varchar(50) NOT NULL,
+    giveaway_pin varchar(50)
 );
 
 -- Table: Entries
@@ -58,6 +60,8 @@ CREATE OR REPLACE VIEW giftcardgiveaway_v AS
         ,	giveaway_enddate AS giftcardgiveaway_v_giveawayenddate
         ,	giveaway_uuid AS giftcardgiveaway_v_giveawayuuid
         ,	giveaway_number AS giftcardgiveaway_v_giveawaynumber
+        ,	giveaway_code as giftcardgiveaway_v_giveawaycode
+        ,	giveaway_pin as giftcardgiveaway_v_giveawaypin
         ,	CONCAT('$', giftcard_value, ' ', giftcard_type, ' Gift Card giveaway (ID: ', UPPER(LEFT(giveaway_uuid, 8)), ')') AS giftcardgiveaway_v_TITLE
         ,	UPPER(LEFT(giveaway_uuid, 8)) AS giftcardgiveaway_v_ID
         ,	CONCAT(giftcard_type, '.png') AS giftcardgiveaway_v_IMAGE
@@ -80,10 +84,10 @@ ROW(uuid(),  @_DATE, @_DATE, 'Roblox', 10),
 ROW(uuid(),  @_DATE, @_DATE, 'Roblox', 15);
 
 -- Inserting giveaway
-INSERT INTO giveaway (giveaway_uuid, giveaway_createtime, giveaway_updatetime, giveaway_giftcarduuid, giveaway_begindate, giveaway_enddate, giveaway_number) VALUES
-ROW(uuid(),  @_DATE, @_DATE, (SELECT giftcard_uuid FROM giftcard WHERE giftcard_value = 5), '2025-03-05 23:59:59', '2025-04-01 23:59:59', null),
-ROW(uuid(),  @_DATE, @_DATE, (SELECT giftcard_uuid FROM giftcard WHERE giftcard_value = 10), '2025-03-10 23:59:59', '2025-04-03 23:59:59', null),
-ROW(uuid(),  @_DATE, @_DATE, (SELECT giftcard_uuid FROM giftcard WHERE giftcard_value = 15), '2025-03-05 23:59:59', '2025-04-07 23:59:59', null);
+INSERT INTO giveaway (giveaway_uuid, giveaway_createtime, giveaway_updatetime, giveaway_giftcarduuid, giveaway_begindate, giveaway_enddate, giveaway_number, giveaway_code, giveaway_pin) VALUES
+ROW(uuid(),  @_DATE, @_DATE, (SELECT giftcard_uuid FROM giftcard WHERE giftcard_value = 5), '2025-06-01 23:59:59', '2025-06-15 23:59:59', null, '12345', null),
+ROW(uuid(),  @_DATE, @_DATE, (SELECT giftcard_uuid FROM giftcard WHERE giftcard_value = 10), '2025-06-01 23:59:59', '2025-06-17 23:59:59', null, '12345', null),
+ROW(uuid(),  @_DATE, @_DATE, (SELECT giftcard_uuid FROM giftcard WHERE giftcard_value = 15), '2025-06-01 23:59:59', '2025-04-07 23:59:59', null, '12345', null);
 
 -- Example entry Insertion
 -- Assuming UserID = 1, giveawayID = 1, and the generated random number is 123
@@ -92,3 +96,106 @@ ROW(uuid(),  @_DATE, @_DATE, (SELECT giveaway_uuid FROM giveaway LIMIT 1), 4, NO
 
 INSERT INTO servicetrigger (servicetrigger_uuid, servicetrigger_createtime, servicetrigger_updatetime, servicetrigger_name, servicetrigger_interval, servicetrigger_lastexecutedtime) VALUES
 ROW('38c5a182-0dcb-4ce8-ac55-b8c2adb26910',  @_DATE, @_DATE, '30s', 30000, @_DATE);
+
+DELIMITER //
+
+CREATE PROCEDURE GetEntryWinners()
+BEGIN
+
+	CREATE TEMPORARY TABLE IF NOT EXISTS TEMPORARYGiveaway (
+		TEMPORARYGiveaway_uuid VARCHAR(36) PRIMARY KEY
+    );
+
+	TRUNCATE TABLE TEMPORARYGiveaway;
+
+	INSERT INTO
+		TEMPORARYGiveaway
+	SELECT
+		giveaway_uuid
+	FROM
+		Giveaway
+	WHERE
+		1 = 1
+        AND NOW() >= giveaway_enddate
+        AND giveaway_number IS NULL;                   
+        
+	IF (SELECT COUNT(*) FROM TEMPORARYGiveaway) > 0 THEN       
+    
+		UPDATE
+			Giveaway
+		JOIN TEMPORARYGiveaway
+			ON giveaway_uuid = TEMPORARYGiveaway_uuid
+		SET
+			giveaway_number =
+			(
+				SELECT
+					entry_giveawaynumber
+				FROM
+					Entry
+				WHERE
+					1 = 1
+					AND entry_giveawaynumber IS NOT NULL
+					AND entry_giveawayuuid = giveaway_uuid
+				ORDER BY
+					RAND()
+				LIMIT
+					1
+			);
+
+		SELECT 
+    Entry.*
+FROM
+    Entry
+        JOIN
+    Giveaway ON entry_giveawayuuid = giveaway_uuid
+        AND entry_giveawaynumber = giveaway_number
+        JOIN
+    TEMPORARYGiveaway ON giveaway_uuid = TEMPORARYGiveaway_uuid
+WHERE
+    1 = 1;         
+	ELSE
+		SELECT
+			*
+		FROM
+			Entry
+		WHERE
+			1 <> 1;
+        
+	END IF;        
+    
+    DROP TEMPORARY TABLE IF EXISTS TEMPORARYGiveaway;
+
+END //
+
+DELIMITER ;
+
+DELIMITER //
+
+CREATE PROCEDURE GetEntryGiveawayNumber(IN giveawayuuid VARCHAR(36))
+BEGIN
+
+	SELECT
+		entry_giveawaynumber
+	FROM
+	(
+		SELECT
+			FLOOR(RAND() * (5000 - 1 + 1)) + 1 AS entry_giveawaynumber
+	) AS RANDNUM
+	WHERE
+		1 = 1
+		AND entry_giveawaynumber NOT IN
+		(
+			SELECT
+				IFNULL(entry_giveawaynumber,0)
+			FROM
+				entry
+			WHERE
+				1 = 1
+				AND entry_giveawayuuid = giveawayuuid
+	);
+
+END //
+
+DELIMITER ;
+
+
