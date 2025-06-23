@@ -12,7 +12,9 @@ export function registerGiveawayRoute(
             res: express.Response , 
             next: express.NextFunction) {
         try {        
-            res.render("giveaway", {giftcardGiveaway_vRow: await giveawayRouteService.getGiveawayByID(req.params.giftcardgiveaway_v_ID)});
+            const giveaway = await giveawayRouteService.getGiveawayByID(req.params.giftcardgiveaway_v_ID);
+            const participants = await giveawayRouteService.getEntriesForGiveaway(req.params.giftcardgiveaway_v_ID);
+            res.render("giveaway", {giftcardGiveaway_vRow: giveaway, participants});
         } catch (error) {
             next(error);
         }

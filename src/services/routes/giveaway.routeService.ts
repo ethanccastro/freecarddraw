@@ -108,6 +108,10 @@ private readonly entryUserTokenRepository: EntityRepository<EntryUserToken>;
             if (!giftcardGiveaway_VRow) {
                 throw new ErrorHandler.NotFoundError(GiftcardGiveaway_V.name, giveawayID);
             }
+
+            if (new Date(giftcardGiveaway_VRow.giftcardgiveaway_v_giveawayenddate) <= new Date()) {
+                throw new ErrorHandler.NotFoundError(GiftcardGiveaway_V.name, giveawayID);
+            }
             
             const entryRow = new Entry(
                 Global.getCurrentTime(),
@@ -239,6 +243,26 @@ private readonly entryUserTokenRepository: EntityRepository<EntryUserToken>;
 
         }
         catch (error) {
+            throw error;
+        }
+    }
+
+    async getEntriesForGiveaway(giveawayID: string): Promise<Entry[]> {
+        try {
+            const giftcardGiveaway_VRow = await this.GiftcardGiveaway_VRepository.findOne({
+                giftcardgiveaway_v_ID: giveawayID
+            });
+            if (!giftcardGiveaway_VRow) {
+                throw new ErrorHandler.NotFoundError(GiftcardGiveaway_V.name, giveawayID);
+            }
+            const entries = await this.entryRepository.find({
+                giftcardgiveaway_v: giftcardGiveaway_VRow,
+                entry_giveawaynumber: { $ne: null }
+            }, {
+                orderBy: { entry_date: 'asc' }
+            });
+            return entries;
+        } catch (error) {
             throw error;
         }
     }

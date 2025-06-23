@@ -10,7 +10,6 @@ import { Giftcard } from './entities/giftcard.entity.js';
 import { Giveaway } from './entities/giveaway.entity.js';
 import { GiftcardGiveaway_V } from './entities/giftcardgiveaway_v.entity.js';
 import { ServiceTrigger } from './entities/servicetrigger.entity.js';
-import ErrorHandler from "./services/utils/errorhandler.utilsService.js"
  
 import { registerIndexRouter } from "./controllers/routes/index.route.js";
 import { registerGiveawayRoute } from "./controllers/routes/giveaway.route.js";
@@ -87,6 +86,23 @@ export async function initMiddleware(app: express.Application): Promise<void> {
         // controller - api
         app.use('/profanity', registerProfanityApi(profanityApiService));
         app.use('/api/giftcard-categories', registerGiftcardCategoriesApi(giftcardCategoriesApiService));
+
+        // 404 Not Found Handler
+        app.use((req: Request, res: Response, next: NextFunction) => {
+            res.status(404).render('error', {
+                message: 'Page Not Found',
+            });
+        });
+
+        // Global Error Handler
+        app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+            console.error('Global Error Handler:', err);
+            const status = err.status || 500;
+            const message = status === 404 ? 'Page Not Found' : (err.message || 'Internal Server Error');
+            res.status(status).render('error', {
+                message,
+            });
+        });
     }
 
 export async function initORM(options?: Options): Promise<Services> {
