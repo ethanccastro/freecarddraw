@@ -1,0 +1,39 @@
+<!-- static.ejs -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= pageData.title %> - Free Card Draw</title>   
+    <%- include('partials/head.ejs') %>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-4083750040120466" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="top-header">
+        <%- include('partials/navigation.ejs') %>
+    </div>
+
+    <div class="site-container">
+        <%- include('partials/sidebar.ejs') %>
+
+        <main class="main-content">
+            <div class="content-header">
+                <h1><%= pageData.title %></h1>
+                <% if (pageData.lastUpdated) { %>
+                    <p class="last-updated">Last updated: <%= pageData.lastUpdated %></p>
+                <% } %>
+            </div>
+
+            <div class="static-content">
+                <%- pageData.content %>
+            </div>
+        </main>
+    </div>
+    
+    <%- include('partials/footer.ejs') %>
+    <%- include('partials/mobile-nav.ejs') %>
+    <%- include('partials/scripts.ejs') %>
+</body>
+</html> 

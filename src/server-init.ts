@@ -14,6 +14,7 @@ import { ServiceTrigger } from './entities/servicetrigger.entity.js';
 import { registerIndexRouter } from "./controllers/routes/index.route.js";
 import { registerGiveawayRoute } from "./controllers/routes/giveaway.route.js";
 import { registerCategoryRouter } from "./controllers/routes/category.route.js";
+import { registerStaticRouter } from "./controllers/routes/static.route.js";
 import { registerProfanityApi } from "./controllers/api/profanity.api.js";
 import { registerGiftcardCategoriesApi } from "./controllers/api/giftcardcategories.api.js";
 import { createPartialsMiddleware } from "./middleware/partials.middleware.js";
@@ -21,6 +22,7 @@ import { createPartialsMiddleware } from "./middleware/partials.middleware.js";
 import IndexRouteService from "./services/routes/index.routeService.js";
 import GiveawayRouteService from "./services/routes/giveaway.routeService.js";
 import CategoryRouteService from "./services/routes/category.routeService.js";
+import { StaticRouteService } from "./services/routes/static.routeService.js";
 import ProfanityApiService from "./services/api/profanity.apiService.js";
 import GiftcardCategoriesApiService from "./services/api/giftcardcategories.apiService.js";
 import PartialsService from "./services/partials/partials.service.js";
@@ -67,6 +69,8 @@ export async function initMiddleware(app: express.Application): Promise<void> {
         const categoryRouteService = new CategoryRouteService(
             orm.giftcardGiveaway_v);
 
+        const staticRouteService = new StaticRouteService();
+
         const profanityApiService = new ProfanityApiService();
         const giftcardCategoriesApiService = new GiftcardCategoriesApiService(orm.giftcardGiveaway_v);
         const partialsService = new PartialsService(orm.giftcardGiveaway_v);
@@ -79,6 +83,7 @@ export async function initMiddleware(app: express.Application): Promise<void> {
         app.use(createPartialsMiddleware(partialsService));
         
         // controller - routes
+        app.use('/', registerStaticRouter(staticRouteService));
         app.use('/', registerCategoryRouter(categoryRouteService));
         app.use('/', registerIndexRouter(indexRouteService));
         app.use('/:giftcardgiveaway_v_ID/:giftcardgiveaway_v_TITLE', registerGiveawayRoute(giveawayRouteService));
