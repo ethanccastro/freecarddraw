@@ -108,6 +108,12 @@ export async function initMiddleware(app: express.Application): Promise<void> {
                 message,
             });
         });
+
+        app.get('/ads.txt', (req, res) => {
+            const filePath = path.join(__dirname, 'ads.txt');
+            res.sendFile(filePath);
+          });
+          
     }
 
 export async function initORM(options?: Options): Promise<Services> {
